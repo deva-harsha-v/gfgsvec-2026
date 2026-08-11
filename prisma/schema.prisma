@@ -22,7 +22,8 @@ model Applicant {
   clubKnowledge      String
   resumePath         String?           // Local path to private uploaded PDF
   interviewPresented Boolean           @default(false)
-  interviewRating    Int?              // Overall interview rating (1 to 5)
+  interviewTechnicalRating    Int?              // Technical rating (1 to 5)
+  interviewNonTechnicalRating Int?              // Non-technical rating (1 to 5)
   interviewNotes     String?
   applicationStatus  ApplicationStatus @default(NEW)
   submittedAt        DateTime          @default(now())

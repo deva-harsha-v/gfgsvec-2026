@@ -27,7 +27,8 @@ interface Applicant {
   clubKnowledge: string;
   resumePath: string | null;
   interviewPresented: boolean;
-  interviewRating: number | null;
+  interviewTechnicalRating: number | null;
+  interviewNonTechnicalRating: number | null;
   interviewNotes: string | null;
   applicationStatus: 'NEW' | 'UNDER_REVIEW' | 'INTERVIEWED' | 'SELECTED' | 'REJECTED';
   submittedAt: string;
@@ -62,7 +63,8 @@ export default function AdminDashboard() {
 
   // Evaluation Fields State
   const [evalPresented, setEvalPresented] = useState(false);
-  const [evalRating, setEvalRating] = useState<number | null>(null);
+  const [evalTechRating, setEvalTechRating] = useState<number | null>(null);
+  const [evalNonTechRating, setEvalNonTechRating] = useState<number | null>(null);
   const [evalNotes, setEvalNotes] = useState('');
   const [evalStatus, setEvalStatus] = useState<'NEW' | 'UNDER_REVIEW' | 'INTERVIEWED' | 'SELECTED' | 'REJECTED'>('NEW');
   const [savingEval, setSavingEval] = useState(false);
@@ -129,7 +131,8 @@ export default function AdminDashboard() {
           setSelectedApp(data);
           // Set evaluation form states
           setEvalPresented(data.interviewPresented);
-          setEvalRating(data.interviewRating);
+          setEvalTechRating(data.interviewTechnicalRating);
+          setEvalNonTechRating(data.interviewNonTechnicalRating);
           setEvalNotes(data.interviewNotes || '');
           setEvalStatus(data.applicationStatus);
         }
@@ -151,7 +154,8 @@ export default function AdminDashboard() {
 
     const payload = {
       interviewPresented: evalPresented,
-      interviewRating: evalPresented ? evalRating : null,
+      interviewTechnicalRating: evalPresented ? evalTechRating : null,
+      interviewNonTechnicalRating: evalPresented ? evalNonTechRating : null,
       interviewNotes: evalNotes.trim() === '' ? null : evalNotes,
       applicationStatus: evalStatus,
     };
@@ -411,13 +415,19 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-3 px-2 text-center font-bold">
                             {app.interviewPresented ? (
-                              app.interviewRating !== null ? (
-                                <span className="text-emerald-400 flex items-center justify-center space-x-0.5">
-                                  <span>{app.interviewRating}</span>
-                                  <Star size={10} className="fill-emerald-500" />
+                              (app.interviewTechnicalRating !== null || app.interviewNonTechnicalRating !== null) ? (
+                                <span className="text-emerald-400 flex flex-col items-center justify-center text-[10px] space-y-0.5">
+                                  <span className="flex items-center space-x-0.5">
+                                    <span className="text-zinc-500 font-mono text-[9px]">T:</span>
+                                    <span>{app.interviewTechnicalRating ?? '?'}</span>
+                                  </span>
+                                  <span className="flex items-center space-x-0.5">
+                                    <span className="text-zinc-500 font-mono text-[9px]">N:</span>
+                                    <span>{app.interviewNonTechnicalRating ?? '?'}</span>
+                                  </span>
                                 </span>
                               ) : (
-                                <span className="text-amber-500 font-mono">?</span>
+                                <span className="text-amber-500 font-mono text-xs">?</span>
                               )
                             ) : (
                               <span className="text-zinc-600 font-mono">-</span>
@@ -638,8 +648,9 @@ export default function AdminDashboard() {
                           const presented = e.target.value === 'Presented';
                           setEvalPresented(presented);
                           if (!presented) {
-                            setEvalRating(null); // Clear rating on Not Presented
-                          }
+                             setEvalTechRating(null);
+                             setEvalNonTechRating(null);
+                           }
                         }}
                         className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all"
                       >
@@ -648,14 +659,28 @@ export default function AdminDashboard() {
                       </select>
                     </div>
 
-                    {/* Overall 5-Star interview rating */}
+                    {/* Technical 5-Star interview rating */}
                     <div className={`flex flex-col space-y-1.5 pt-2 border-t border-zinc-800/40 ${!evalPresented ? 'opacity-50' : ''}`}>
-                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Overall Interview Rating</span>
+                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Technical Rating</span>
                       <StarRating
-                        value={evalPresented ? evalRating : null}
+                        value={evalPresented ? evalTechRating : null}
                         onChange={(val) => {
                           if (evalPresented) {
-                            setEvalRating(val);
+                            setEvalTechRating(val);
+                          }
+                        }}
+                        disabled={!evalPresented}
+                      />
+                    </div>
+
+                    {/* Non-Technical 5-Star interview rating */}
+                    <div className={`flex flex-col space-y-1.5 pt-2 border-t border-zinc-800/40 ${!evalPresented ? 'opacity-50' : ''}`}>
+                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Non-Technical Rating</span>
+                      <StarRating
+                        value={evalPresented ? evalNonTechRating : null}
+                        onChange={(val) => {
+                          if (evalPresented) {
+                            setEvalNonTechRating(val);
                           }
                         }}
                         disabled={!evalPresented}

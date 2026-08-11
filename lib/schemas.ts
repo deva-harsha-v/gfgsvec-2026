@@ -37,15 +37,21 @@ export const ChangePasswordSchema = z.object({
 
 export const EvaluationSchema = z.object({
   interviewPresented: z.boolean(),
-  interviewRating: z.number().int().min(1).max(5).nullable().optional(),
+  interviewTechnicalRating: z.number().int().min(1).max(5).nullable().optional(),
+  interviewNonTechnicalRating: z.number().int().min(1).max(5).nullable().optional(),
   interviewNotes: z.string().trim().nullable().optional(),
   applicationStatus: z.enum(['NEW', 'UNDER_REVIEW', 'INTERVIEWED', 'SELECTED', 'REJECTED']),
 }).refine((data) => {
-  if (!data.interviewPresented && data.interviewRating !== null && data.interviewRating !== undefined) {
-    return false;
+  if (!data.interviewPresented) {
+    if (
+      (data.interviewTechnicalRating !== null && data.interviewTechnicalRating !== undefined) ||
+      (data.interviewNonTechnicalRating !== null && data.interviewNonTechnicalRating !== undefined)
+    ) {
+      return false;
+    }
   }
   return true;
 }, {
-  message: 'Rating must be null if the student did not present for the interview',
-  path: ['interviewRating'],
+  message: 'Ratings must be null if the student did not present for the interview',
+  path: ['interviewTechnicalRating'],
 });

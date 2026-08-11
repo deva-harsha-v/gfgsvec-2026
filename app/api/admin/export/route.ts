@@ -20,14 +20,16 @@ export async function GET(req: NextRequest) {
     });
 
     // 3. Format Data into Table Rows
-    const data = applicants.map((app: Applicant) => {
-      let ratingValue = 'Absent';
+    const data = applicants.map((app: any) => {
+      let techRatingValue = 'Absent';
+      let nonTechRatingValue = 'Absent';
       if (app.interviewPresented) {
-        if (app.interviewRating !== null && app.interviewRating !== undefined) {
-          ratingValue = `${app.interviewRating} Stars`;
-        } else {
-          ratingValue = 'Presented (Not Rated)';
-        }
+        techRatingValue = app.interviewTechnicalRating !== null && app.interviewTechnicalRating !== undefined
+          ? `${app.interviewTechnicalRating} Stars`
+          : 'Presented (Not Rated)';
+        nonTechRatingValue = app.interviewNonTechnicalRating !== null && app.interviewNonTechnicalRating !== undefined
+          ? `${app.interviewNonTechnicalRating} Stars`
+          : 'Presented (Not Rated)';
       }
 
       return {
@@ -36,7 +38,7 @@ export async function GET(req: NextRequest) {
         'Roll Number': app.rollNumber,
         'Year': app.year,
         'Section': app.section,
-        'Interested Fields': app.interestedFields.map(f => ROLE_DISPLAY_NAMES[f] || f).join(', '),
+        'Interested Fields': app.interestedFields.map((f: string) => ROLE_DISPLAY_NAMES[f] || f).join(', '),
         'Past Experience': app.hasPastExperience ? 'Yes' : 'No',
         'Past Experience Details': app.pastExperience || '',
         'Previous Work / Portfolio Links': app.previousWorkLinks.join(', '),
@@ -45,7 +47,8 @@ export async function GET(req: NextRequest) {
         'What They Know About Club': app.clubKnowledge,
         'Resume URL': app.resumePath ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/applications/${app.id}/resume` : 'None',
         'Interview Presented': app.interviewPresented ? 'Presented' : 'Not Presented',
-        'Interview Rating': ratingValue,
+        'Technical Rating': techRatingValue,
+        'Non-Technical Rating': nonTechRatingValue,
         'Interview Notes': app.interviewNotes || '',
         'Application Status': app.applicationStatus,
         'Submitted At': app.submittedAt.toISOString(),

@@ -35,10 +35,14 @@ export async function GET(req: NextRequest) {
       where.interviewPresented = true;
     } else if (filter === 'Rated') {
       where.interviewPresented = true;
-      where.interviewRating = { not: null };
+      where.OR = [
+        { interviewTechnicalRating: { not: null } },
+        { interviewNonTechnicalRating: { not: null } }
+      ];
     } else if (filter === 'NotRated') {
       where.interviewPresented = true;
-      where.interviewRating = null;
+      where.interviewTechnicalRating = null;
+      where.interviewNonTechnicalRating = null;
     }
 
     // 3. Query Database
@@ -65,8 +69,22 @@ export async function GET(req: NextRequest) {
       db.applicant.count(),
       db.applicant.count({ where: { interviewPresented: true } }),
       db.applicant.count({ where: { interviewPresented: false } }),
-      db.applicant.count({ where: { interviewPresented: true, interviewRating: { not: null } } }),
-      db.applicant.count({ where: { interviewPresented: true, interviewRating: null } }),
+      db.applicant.count({
+        where: {
+          interviewPresented: true,
+          OR: [
+            { interviewTechnicalRating: { not: null } },
+            { interviewNonTechnicalRating: { not: null } }
+          ]
+        }
+      }),
+      db.applicant.count({
+        where: {
+          interviewPresented: true,
+          interviewTechnicalRating: null,
+          interviewNonTechnicalRating: null
+        }
+      }),
       db.applicant.count({
         where: {
           interestedFields: {

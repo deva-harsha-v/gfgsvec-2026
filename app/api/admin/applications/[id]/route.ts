@@ -47,20 +47,24 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: `Validation error: ${errorMsg}` }, { status: 400 });
     }
 
-    const { interviewPresented, interviewRating, interviewNotes, applicationStatus } = validation.data;
+    const { interviewPresented, interviewTechnicalRating, interviewNonTechnicalRating, interviewNotes, applicationStatus } = validation.data;
 
     // 3. Strict Rating/Presented Constraint Logic
-    let ratingToSave: number | null = null;
+    let techRatingToSave: number | null = null;
+    let nonTechRatingToSave: number | null = null;
     if (interviewPresented) {
-      if (interviewRating !== undefined && interviewRating !== null) {
-        if (interviewRating < 1 || interviewRating > 5) {
-          return NextResponse.json({ error: 'Rating must be between 1 and 5.' }, { status: 400 });
+      if (interviewTechnicalRating !== undefined && interviewTechnicalRating !== null) {
+        if (interviewTechnicalRating < 1 || interviewTechnicalRating > 5) {
+          return NextResponse.json({ error: 'Technical rating must be between 1 and 5.' }, { status: 400 });
         }
-        ratingToSave = interviewRating;
+        techRatingToSave = interviewTechnicalRating;
       }
-    } else {
-      // If not presented, rating MUST be null (enforcing strict business logic)
-      ratingToSave = null;
+      if (interviewNonTechnicalRating !== undefined && interviewNonTechnicalRating !== null) {
+        if (interviewNonTechnicalRating < 1 || interviewNonTechnicalRating > 5) {
+          return NextResponse.json({ error: 'Non-technical rating must be between 1 and 5.' }, { status: 400 });
+        }
+        nonTechRatingToSave = interviewNonTechnicalRating;
+      }
     }
 
     // 4. Update Database
@@ -68,7 +72,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       where: { id },
       data: {
         interviewPresented,
-        interviewRating: ratingToSave,
+        interviewTechnicalRating: techRatingToSave,
+        interviewNonTechnicalRating: nonTechRatingToSave,
         interviewNotes,
         applicationStatus,
       },
