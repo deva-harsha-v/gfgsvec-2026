@@ -5,9 +5,10 @@ import { Terminal } from 'lucide-react';
 export default function Hero() {
   return (
     <div className="relative text-center py-10 md:py-16 max-w-3xl mx-auto flex flex-col items-center space-y-4">
-      {/* Club Logo Placeholder / Technical Graphic */}
-      <div className="flex items-center justify-center w-16 h-16 bg-emerald-950/40 border border-emerald-500/30 rounded-2xl text-emerald-400 mb-2 shadow-lg shadow-emerald-500/5 animate-pulse">
-        <Terminal size={32} />
+      {/* Club Logo */}
+      <div className="flex items-center justify-center w-16 h-16 mb-2 overflow-hidden rounded-2xl border border-zinc-850 bg-zinc-950 shadow-lg shadow-emerald-500/5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="GFG SVEC Logo" className="w-full h-full object-contain p-1" />
       </div>
 
       <span className="text-emerald-400 font-mono text-xs md:text-sm font-bold tracking-[0.25em] uppercase">

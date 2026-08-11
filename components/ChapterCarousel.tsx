@@ -64,91 +64,72 @@ export default function ChapterCarousel() {
   const activePost = CHAPTER_POSTS[currentIndex];
 
   return (
-    <section 
-      className="w-full max-w-4xl mx-auto bg-zinc-900/40 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm"
+    <div 
+      className="w-full max-w-[360px] mx-auto bg-zinc-900/40 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm relative group p-3"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="p-6 md:p-10 flex flex-col md:flex-row gap-8 items-center">
-        
-        {/* Carousel Image container */}
-        <div 
-          className="w-full md:w-1/2 aspect-video md:aspect-[4/3] bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden relative group"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Smooth slide transition using transform */}
-          <div className="w-full h-full relative overflow-hidden">
-            {CHAPTER_POSTS.map((post, idx) => (
-              <div
-                key={post.id}
-                className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
-                  idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                }`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Previous/Next Navigation Arrows */}
-          <button
-            onClick={prevSlide}
-            aria-label="Previous slide"
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-zinc-900/85 hover:bg-emerald-600 border border-zinc-700/50 hover:border-emerald-500 text-white hover:text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 duration-200"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={nextSlide}
-            aria-label="Next slide"
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-zinc-900/85 hover:bg-emerald-600 border border-zinc-700/50 hover:border-emerald-500 text-white hover:text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 duration-200"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-
-        {/* Textual Explanations */}
-        <div className="w-full md:w-1/2 flex flex-col justify-between min-h-[220px]">
-          <div>
-            {/* Slide Index Counter */}
-            <span className="text-emerald-400 font-mono font-bold text-sm tracking-wider block mb-2">
-              {activePost.id} / {String(totalSlides).padStart(2, '0')}
-            </span>
-            
-            {/* Slide Title */}
-            <h3 className="text-white font-extrabold text-xl md:text-2xl tracking-wide uppercase mb-4 leading-snug">
-              {activePost.title}
-            </h3>
-            
-            {/* Slide Description */}
-            <p className="text-zinc-400 text-sm md:text-base leading-relaxed font-normal">
-              {activePost.text}
-            </p>
-          </div>
-
-          {/* Dots Indicator */}
-          <div className="flex space-x-2 mt-6 justify-center md:justify-start">
-            {CHAPTER_POSTS.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  idx === currentIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-zinc-700 hover:bg-zinc-600'
-                }`}
+      {/* Carousel Image container */}
+      <div 
+        className="w-full aspect-[4/5] bg-zinc-950 rounded-2xl border border-zinc-850 overflow-hidden relative"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="w-full h-full relative overflow-hidden">
+          {CHAPTER_POSTS.map((post, idx) => (
+            <div
+              key={post.id}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out ${
+                idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={post.image}
+                alt={post.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
               />
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
 
+        {/* Previous/Next Navigation Arrows */}
+        <button
+          onClick={prevSlide}
+          aria-label="Previous slide"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-zinc-950/80 hover:bg-emerald-600 border border-zinc-800 hover:border-emerald-500 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 duration-200"
+        >
+          <ChevronLeft size={16} />
+        </button>
+        <button
+          onClick={nextSlide}
+          aria-label="Next slide"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-zinc-950/80 hover:bg-emerald-600 border border-zinc-800 hover:border-emerald-500 text-white p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 duration-200"
+        >
+          <ChevronRight size={16} />
+        </button>
       </div>
-    </section>
+
+      {/* Slide index & Pagination Dots */}
+      <div className="flex items-center justify-between mt-3 px-1 text-[10px]">
+        <span className="text-zinc-500 font-mono font-bold uppercase tracking-wider">
+          Slide {activePost.id} / {String(totalSlides).padStart(2, '0')}
+        </span>
+
+        <div className="flex space-x-1">
+          {CHAPTER_POSTS.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                idx === currentIndex ? 'w-4 bg-emerald-500' : 'w-1 bg-zinc-800 hover:bg-zinc-700'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

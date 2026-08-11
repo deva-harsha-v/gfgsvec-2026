@@ -8,32 +8,32 @@ export interface ChapterPost {
 export const CHAPTER_POSTS: ChapterPost[] = [
   {
     id: "01",
-    title: "INNOVATION & TECHNOLOGY",
-    image: "/chapter1/innovation.jpg",
-    text: "At the GFG Sri Vasavi Engineering College chapter, we push the boundaries of technical learning. We host hands-on workshops, hackathons, and bootcamps, focusing on software engineering, web development, AI/ML, and system design."
+    title: "Sri Vasavi Engineering College GFG Campus Body",
+    image: "/chapter1/poster1.jpg",
+    text: "Welcome to the GeeksforGeeks Campus Body chapter at SVEC. Join us in building a vibrant developer ecosystem."
   },
   {
     id: "02",
-    title: "COMPETITIVE PROGRAMMING",
-    image: "/chapter1/coding.jpg",
-    text: "Join our core coding circles! We conduct regular contests, peer learning sessions, and coding drills to help students build strong data structures and algorithms (DSA) fundamentals and prepare for top tier coding interviews."
+    title: "One Year of Impact",
+    image: "/chapter1/poster2.jpg",
+    text: "Reflecting on a year full of workshops, technical events, Git & GitHub sessions, coding challenges, and collaborative learning."
   },
   {
     id: "03",
-    title: "CREATIVE & BRAND DESIGN",
-    image: "/chapter1/design.jpg",
-    text: "From UI/UX designs to recruitment poster assets, our design team translates complex technical concepts into engaging visuals. Experience working with Figma, Illustrator, and typography to build the club's visual identity."
+    title: "Learn, Build, Share, Grow, Lead",
+    image: "/chapter1/poster3.jpg",
+    text: "A community driven by curiosity, collaboration, and consistency. Work together, learn from seniors, and lead the tech scene."
   },
   {
     id: "04",
-    title: "EVENT MANAGEMENT & PR",
-    image: "/chapter1/coding.jpg",
-    text: "Learn the craft of organizing large-scale tech events, coordinating public relations, and collaborating with corporate speakers. This domain builds essential leadership, communications, and teamwork skills."
+    title: "With Gratitude",
+    image: "/chapter1/poster4.jpg",
+    text: "Every contribution made this chapter possible. Sincere thanks to our mentor faculty and campus lead body."
   },
   {
     id: "05",
-    title: "SOCIAL MEDIA & CONTENT",
-    image: "/chapter1/design.jpg",
-    text: "Our voice to the world! Write technical blogs, design copy, capture photography/videography, and coordinate our campus digital outreach campaigns to keep the student body updated and inspired."
+    title: "Chapter 1 Ends Here",
+    image: "/chapter1/poster5.jpg",
+    text: "The journey doesn't stop here. Join us in Chapter 2 to write the next success story."
   }
 ];

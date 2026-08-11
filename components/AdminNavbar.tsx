@@ -29,8 +29,9 @@ export default function AdminNavbar() {
     <nav className="w-full bg-zinc-900 border-b border-zinc-800 py-4 px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4">
       {/* Brand Logo */}
       <Link href="/admin" className="flex items-center space-x-2 text-white hover:text-emerald-400 transition-colors">
-        <div className="w-8 h-8 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 rounded-lg flex items-center justify-center">
-          <Terminal size={18} />
+        <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
         </div>
         <span className="font-extrabold tracking-wider uppercase text-sm">GFG SVEC Admin</span>
       </Link>

@@ -63,8 +63,9 @@ export default function AdminLoginPage() {
         
         {/* Brand */}
         <div className="flex flex-col items-center space-y-3 mb-8">
-          <div className="w-12 h-12 bg-emerald-950 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/5">
-            <Terminal size={24} />
+          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center shadow-lg shadow-emerald-500/5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
           </div>
           <span className="text-zinc-500 font-mono text-xs font-bold tracking-[0.2em] uppercase">
             Sri Vasavi Engineering College

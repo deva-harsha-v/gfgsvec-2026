@@ -41,7 +41,10 @@ export default function ApplyPage() {
         </Link>
         
         <div className="flex items-center space-x-2 text-zinc-500">
-          <Terminal className="w-4 h-4 text-emerald-500" />
+          <div className="w-5 h-5 rounded overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-0.5" />
+          </div>
           <span className="text-[10px] font-bold uppercase tracking-widest font-mono">GFG SVEC Club</span>
         </div>
       </div>
@@ -66,10 +69,11 @@ export default function ApplyPage() {
             </Link>
           </div>
         ) : !isOpen ? (
-          <div className="max-w-md mx-auto text-center space-y-4 py-16">
-            <div className="w-12 h-12 bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto animate-pulse">
-              <Terminal size={24} />
-            </div>
+        <div className="max-w-md mx-auto text-center space-y-4 py-16">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center mx-auto mb-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain p-1" />
+          </div>
             <h3 className="text-xl font-bold text-white uppercase">Applications Closed</h3>
             <p className="text-zinc-400 text-sm leading-relaxed">
               Recruitment registration forms are not open yet. Please wait for the countdown timer on our home page to finish.
