@@ -28,7 +28,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     // 3. Resolve private path
-    const filePath = path.join(process.cwd(), 'storage', 'resumes', applicant.resumePath);
+    const storageDir = process.env.VERCEL
+      ? path.join('/tmp', 'resumes')
+      : path.join(process.cwd(), 'storage', 'resumes');
+    const filePath = path.join(storageDir, applicant.resumePath);
 
     try {
       // Check if file exists

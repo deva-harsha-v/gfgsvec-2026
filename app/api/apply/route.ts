@@ -6,7 +6,9 @@ import path from 'path';
 import crypto from 'crypto';
 
 const TARGET_UTC_TIME = '2026-08-10T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
-const STORAGE_DIR = path.join(process.cwd(), 'storage', 'resumes');
+const STORAGE_DIR = process.env.VERCEL
+  ? path.join('/tmp', 'resumes')
+  : path.join(process.cwd(), 'storage', 'resumes');
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(req: NextRequest) {
