@@ -5,7 +5,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const START_UTC_TIME = '2026-08-12T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
+const START_UTC_TIME = '2026-08-10T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
 const CLOSE_UTC_TIME = '2026-08-12T17:30:00.000Z'; // 11:00 PM IST (Asia/Kolkata)
 const STORAGE_DIR = process.env.VERCEL
   ? path.join('/tmp', 'resumes')
