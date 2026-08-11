@@ -254,10 +254,10 @@ export default function Home() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-1.5">
             <Terminal size={14} className="text-emerald-500/50" />
-            <span>GFG Campus Club • SVEC Chapter © 2026</span>
+            <span>GFG Campus Club</span>
           </div>
           <Link href="/admin/login" className="hover:text-emerald-500 transition-colors uppercase">
-            Admin Panel Access
+             SVEC Chapter © 2026
           </Link>
         </div>
       </footer>
