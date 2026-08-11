@@ -5,7 +5,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const TARGET_UTC_TIME = '2026-08-10T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
+const START_UTC_TIME = '2026-08-12T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
+const CLOSE_UTC_TIME = '2026-08-12T17:30:00.000Z'; // 11:00 PM IST (Asia/Kolkata)
 const STORAGE_DIR = process.env.VERCEL
   ? path.join('/tmp', 'resumes')
   : path.join(process.cwd(), 'storage', 'resumes');
@@ -13,14 +14,25 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Time Check
+    // 1. Time Check (with dev bypass)
     const now = new Date();
-    const target = new Date(TARGET_UTC_TIME);
-    if (now.getTime() < target.getTime()) {
-      return NextResponse.json(
-        { error: 'Applications are not open yet.' },
-        { status: 403 }
-      );
+    const start = new Date(START_UTC_TIME);
+    const close = new Date(CLOSE_UTC_TIME);
+    const isDev = process.env.NODE_ENV === 'development';
+
+    if (!isDev) {
+      if (now.getTime() < start.getTime()) {
+        return NextResponse.json(
+          { error: 'Applications are not open yet.' },
+          { status: 403 }
+        );
+      }
+      if (now.getTime() >= close.getTime()) {
+        return NextResponse.json(
+          { error: 'Applications are now closed.' },
+          { status: 403 }
+        );
+      }
     }
 
     // 2. Parse Form Data
@@ -111,39 +123,47 @@ export async function POST(req: NextRequest) {
     const resumePath = fileName;
 
     // 6. Transactional sequential Application ID generation
-    const result = await db.$transaction(async (tx) => {
-      // Ensure the sequence exists (starting at 5 since 1-4 are seeded candidates)
-      await tx.$executeRawUnsafe(
-        "CREATE SEQUENCE IF NOT EXISTS application_id_seq START WITH 5;"
-      );
-
-      // Fetch next sequence value atomically
-      const seqResult = await tx.$queryRawUnsafe<{ nextval: bigint }[]>(
+    let nextSeq: number;
+    try {
+      const seqResult = await db.$queryRawUnsafe<{ nextval: bigint }[]>(
         "SELECT nextval('application_id_seq');"
       );
-      
-      const nextSeq = Number(seqResult[0].nextval);
-      const paddedNum = String(nextSeq).padStart(4, '0');
-      const applicationId = `GFG-SVEC-2026-${paddedNum}`;
+      nextSeq = Number(seqResult[0].nextval);
+    } catch (err: any) {
+      // If sequence doesn't exist, create it dynamically and retry nextval
+      if (err.message?.includes('relation "application_id_seq" does not exist') || err.code === 'P2010') {
+        await db.$executeRawUnsafe(
+          "CREATE SEQUENCE IF NOT EXISTS application_id_seq START WITH 5;"
+        );
+        const seqResult = await db.$queryRawUnsafe<{ nextval: bigint }[]>(
+          "SELECT nextval('application_id_seq');"
+        );
+        nextSeq = Number(seqResult[0].nextval);
+      } else {
+        throw err;
+      }
+    }
 
-      // Insert applicant
-      return tx.applicant.create({
-        data: {
-          applicationId,
-          name,
-          rollNumber,
-          year,
-          section,
-          interestedFields,
-          hasPastExperience,
-          pastExperience,
-          previousWorkLinks,
-          reasonForJoining,
-          contribution,
-          clubKnowledge,
-          resumePath,
-        },
-      });
+    const paddedNum = String(nextSeq).padStart(4, '0');
+    const applicationId = `GFG-SVEC-2026-${paddedNum}`;
+
+    // Insert applicant
+    const result = await db.applicant.create({
+      data: {
+        applicationId,
+        name,
+        rollNumber,
+        year,
+        section,
+        interestedFields,
+        hasPastExperience,
+        pastExperience,
+        previousWorkLinks,
+        reasonForJoining,
+        contribution,
+        clubKnowledge,
+        resumePath,
+      },
     });
 
     return NextResponse.json({
