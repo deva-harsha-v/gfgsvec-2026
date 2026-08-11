@@ -34,8 +34,20 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sansSelection selection:bg-emerald-500/30 selection:text-emerald-400">
+    <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sansSelection selection:bg-emerald-500/30 selection:text-emerald-400 relative">
       
+      {/* Background library image with fading mask */}
+      <div className="fixed inset-0 -z-10 w-full h-full overflow-hidden pointer-events-none">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img 
+          src="/college-building.png" 
+          alt="Sri Vasavi Engineering College Building Background" 
+          className="w-full h-full object-cover object-center opacity-[0.08] filter saturate-[0.1] blur-[1px]" 
+        />
+        {/* Dark radial gradient overlay for focus and contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-zinc-950/80 to-zinc-950" />
+      </div>
+
       {/* Header Accent */}
       <div className="w-full h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600" />
 
@@ -253,7 +265,6 @@ export default function Home() {
       <footer className="w-full bg-zinc-950 border-t border-zinc-900 py-6 px-6 text-center text-xs font-mono font-bold text-zinc-600">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-1.5">
-            <Terminal size={14} className="text-emerald-500/50" />
             <span>GFG Campus Club</span>
           </div>
           <Link href="/admin/login" className="hover:text-emerald-500 transition-colors uppercase">
