@@ -112,6 +112,11 @@ export async function POST(req: NextRequest) {
 
     // 6. Transactional sequential Application ID generation
     const result = await db.$transaction(async (tx) => {
+      // Ensure the sequence exists (starting at 5 since 1-4 are seeded candidates)
+      await tx.$executeRawUnsafe(
+        "CREATE SEQUENCE IF NOT EXISTS application_id_seq START WITH 5;"
+      );
+
       // Fetch next sequence value atomically
       const seqResult = await tx.$queryRawUnsafe<{ nextval: bigint }[]>(
         "SELECT nextval('application_id_seq');"

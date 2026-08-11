@@ -120,6 +120,9 @@ async function main() {
 
   // 3. Set the database sequence to match the actual maximum ID in the database
   try {
+    // Ensure the sequence exists
+    await prisma.$executeRawUnsafe(`CREATE SEQUENCE IF NOT EXISTS application_id_seq START WITH 5;`);
+
     const maxValResult = await prisma.$queryRawUnsafe<{ maxval: number }[]>(
       `SELECT COALESCE(MAX(CAST(SUBSTRING("applicationId", 15) AS INTEGER)), 4) as maxval FROM "Applicant"`
     );
