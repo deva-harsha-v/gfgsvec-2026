@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAdminFromRequest } from '@/lib/auth';
+import { Applicant } from '@prisma/client';
 import * as XLSX from 'xlsx';
 
 export async function GET(req: NextRequest) {
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     });
 
     // 3. Format Data into Table Rows
-    const data = applicants.map((app) => ({
+    const data = applicants.map((app: Applicant) => ({
       'Application ID': app.applicationId,
       'Name': app.name,
       'Roll Number': app.rollNumber,
