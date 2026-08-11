@@ -107,22 +107,23 @@ export default function SuccessPage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans relative">
       
       {/* Background library image with fading mask */}
-      <div className="fixed inset-0 -z-10 w-full h-full overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 z-0 w-full h-full overflow-hidden pointer-events-none bg-zinc-950">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src="/college-building.png" 
           alt="Sri Vasavi Engineering College Building Background" 
-          className="w-full h-full object-cover object-center opacity-[0.25] filter saturate-[0.2]" 
+          className="w-full h-full object-cover object-center opacity-[0.8]" 
         />
-        {/* Dark radial gradient overlay for focus and contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/75 to-zinc-950" />
+        {/* Dark mask overlay to blend it heavily into the background color */}
+        <div className="absolute inset-0 bg-zinc-950/85 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-zinc-950" />
       </div>
 
       {/* Header Accent */}
-      <div className="w-full h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600" />
+      <div className="w-full h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 relative z-10" />
 
       {/* Nav */}
-      <div className="w-full max-w-5xl mx-auto px-6 pt-8 flex items-center justify-between">
+      <div className="w-full max-w-5xl mx-auto px-6 pt-8 flex items-center justify-between relative z-10">
         <div className="flex items-center space-x-2 text-zinc-500">
           <div className="w-5 h-5 text-emerald-500 flex items-center justify-center">
             <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -134,7 +135,7 @@ export default function SuccessPage() {
       </div>
 
       {/* Main Container */}
-      <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 flex flex-col justify-center">
+      <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 flex flex-col justify-center relative z-10">
         <Suspense fallback={
           <div className="flex justify-center items-center py-20 text-zinc-500 font-mono text-xs uppercase tracking-widest">
             Loading...
