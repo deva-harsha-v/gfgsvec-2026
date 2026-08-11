@@ -118,10 +118,14 @@ async function main() {
     });
   }
 
-  // 3. Set the database sequence to match
+  // 3. Set the database sequence to match the actual maximum ID in the database
   try {
-    await prisma.$executeRawUnsafe("SELECT setval('application_id_seq', 4);");
-    console.log('Sequence application_id_seq reset to 4.');
+    const maxValResult = await prisma.$queryRawUnsafe<{ maxval: number }[]>(
+      `SELECT COALESCE(MAX(CAST(SUBSTRING("applicationId", 15) AS INTEGER)), 4) as maxval FROM "Applicant"`
+    );
+    const maxVal = maxValResult[0]?.maxval || 4;
+    await prisma.$executeRawUnsafe(`SELECT setval('application_id_seq', ${maxVal});`);
+    console.log(`Sequence application_id_seq dynamically reset to ${maxVal}.`);
   } catch (err) {
     console.warn('Could not reset sequence application_id_seq (maybe database engine is not Postgres yet).', err);
   }
