@@ -1,0 +1,47 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Applicant {
+  id                 String            @id @default(cuid())
+  applicationId      String            @unique // Sequentially generated: GFG-SVEC-2026-XXXX
+  name               String
+  rollNumber         String            @unique // Duplicate prevention
+  year               String
+  section            String
+  interestedFields   String[]          // e.g. ["Web Development", "Design"]
+  hasPastExperience  Boolean
+  pastExperience     String?
+  previousWorkLinks  String[]          // Portfolio/social links
+  reasonForJoining   String
+  contribution       String
+  clubKnowledge      String
+  resumePath         String?           // Local path to private uploaded PDF
+  interviewPresented Boolean           @default(false)
+  interviewRating    Int?              // Validation: 1 to 5 (must be null if interviewPresented is false)
+  interviewNotes     String?
+  applicationStatus  ApplicationStatus @default(NEW)
+  submittedAt        DateTime          @default(now())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+enum ApplicationStatus {
+  NEW
+  UNDER_REVIEW
+  INTERVIEWED
+  SELECTED
+  REJECTED
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed password
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
