@@ -6,8 +6,8 @@ import ApplicationForm from '@/components/ApplicationForm';
 import { ChevronLeft, Terminal, AlertCircle } from 'lucide-react';
 
 export default function ApplyPage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

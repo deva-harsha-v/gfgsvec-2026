@@ -9,8 +9,8 @@ import { ArrowRight, Terminal, Globe, Calendar } from 'lucide-react';
 import { RECRUITMENT_ROLES } from '@/lib/roles';
 
 export default function Home() {
-  const [targetTime, setTargetTime] = useState<string>('2026-08-12T14:00:00.000Z');
-  const [isOpen, setIsOpen] = useState(false);
+  const [targetTime, setTargetTime] = useState<string>('2026-08-10T14:00:00.000Z');
+  const [isOpen, setIsOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
 

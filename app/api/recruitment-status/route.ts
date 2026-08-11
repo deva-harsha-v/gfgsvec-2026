@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const TARGET_UTC_TIME = '2026-08-12T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
+const TARGET_UTC_TIME = '2026-08-10T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
 
 export async function GET() {
   const now = new Date();
