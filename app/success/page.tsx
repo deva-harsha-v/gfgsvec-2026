@@ -112,10 +112,10 @@ export default function SuccessPage() {
         <img 
           src="/college-building.png" 
           alt="Sri Vasavi Engineering College Building Background" 
-          className="w-full h-full object-cover object-center opacity-[0.08] filter saturate-[0.1] blur-[1px]" 
+          className="w-full h-full object-cover object-center opacity-[0.25] filter saturate-[0.2]" 
         />
         {/* Dark radial gradient overlay for focus and contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/20 via-zinc-950/80 to-zinc-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/75 to-zinc-950" />
       </div>
 
       {/* Header Accent */}
