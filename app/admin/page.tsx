@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminNavbar from '@/components/AdminNavbar';
 import StarRating from '@/components/StarRating';
+import { ROLE_DISPLAY_NAMES } from '@/lib/roles';
 import { 
   Users, UserCheck, Star, Award, 
   Search, Download, Save, ArrowRight, 
@@ -67,8 +68,8 @@ export default function AdminDashboard() {
   const [savingEval, setSavingEval] = useState(false);
   const [evalMsg, setEvalMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Evaluation Queue Mode
-  const [queueMode, setQueueMode] = useState<'ALL' | 'PRESENTED_NOT_RATED' | 'NOT_PRESENTED'>('PRESENTED_NOT_RATED');
+  const [mobileTab, setMobileTab] = useState<'directory' | 'evaluation'>('directory');
+  const [autoSelectFirst, setAutoSelectFirst] = useState(false);
 
   const router = useRouter();
 
@@ -85,16 +86,23 @@ export default function AdminDashboard() {
       }
 
       const data = await res.json();
-      setApplicants(data.applications || []);
+      const list = data.applications || [];
+      setApplicants(list);
       setTotalPages(data.pagination?.totalPages || 1);
       setStats(data.stats || null);
+      
+      if (autoSelectFirst && list.length > 0) {
+        setSelectedId(list[0].id);
+        setMobileTab('evaluation');
+        setAutoSelectFirst(false);
+      }
       setCheckingAuth(false);
     } catch (err) {
       console.error('Fetch error:', err);
     } finally {
       setLoadingList(false);
     }
-  }, [searchVal, activeFilter, page, router]);
+  }, [searchVal, activeFilter, page, router, autoSelectFirst]);
 
   useEffect(() => {
     fetchList();
@@ -143,7 +151,7 @@ export default function AdminDashboard() {
 
     const payload = {
       interviewPresented: evalPresented,
-      interviewRating: evalPresented ? evalRating : null, // Backend enforces null if not presented
+      interviewRating: evalPresented ? evalRating : null,
       interviewNotes: evalNotes.trim() === '' ? null : evalNotes,
       applicationStatus: evalStatus,
     };
@@ -167,7 +175,7 @@ export default function AdminDashboard() {
       
       // Update local state in list
       setApplicants((prev) =>
-        prev.map((a) => (a.id === selectedApp.id ? { ...a, ...payload } : a))
+        prev.map((a) => (a.id === selectedApp.id ? result.applicant : a))
       );
 
       // Refresh Stats
@@ -185,7 +193,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 4. Save & Next Queue Workflow
+  // 4. Save & Next Queue Workflow (Context-preserving list transition)
   const handleSaveAndNext = async () => {
     if (!selectedApp) return;
 
@@ -193,40 +201,19 @@ export default function AdminDashboard() {
     const saved = await handleSaveEvaluation(true);
     if (!saved) return;
 
-    // Fetch the full list of candidate IDs matching the selected queue mode to locate the next candidate
-    try {
-      let filterParam = 'All';
-      if (queueMode === 'PRESENTED_NOT_RATED') {
-        filterParam = 'NotRated';
-      } else if (queueMode === 'NOT_PRESENTED') {
-        filterParam = 'NotPresented';
-      }
-
-      // Fetch a larger page size of candidate IDs matching the active queue
-      const res = await fetch(`/api/admin/applications?filter=${filterParam}&limit=100`);
-      if (res.ok) {
-        const data = await res.json();
-        const queueApps: Applicant[] = data.applications || [];
-        
-        // Find current index in this queue
-        const currentIndex = queueApps.findIndex(a => a.id === selectedApp.id);
-        
-        let nextApp: Applicant | undefined;
-        if (currentIndex > -1 && currentIndex < queueApps.length - 1) {
-          nextApp = queueApps[currentIndex + 1];
-        } else if (queueApps.length > 0) {
-          // If current is not in list (or at the end), select the first matching candidate
-          nextApp = queueApps[0];
-        }
-
-        if (nextApp) {
-          setSelectedId(nextApp.id);
-        } else {
-          setEvalMsg({ type: 'success', text: 'Evaluation saved. No more applicants in this queue!' });
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching next candidate:', err);
+    // Find current index in the active directory list page
+    const currentIndex = applicants.findIndex(a => a.id === selectedApp.id);
+    
+    if (currentIndex > -1 && currentIndex < applicants.length - 1) {
+      const nextApp = applicants[currentIndex + 1];
+      setSelectedId(nextApp.id);
+      setMobileTab('evaluation');
+    } else if (page < totalPages) {
+      // Go to next page and set flag to select first applicant on load
+      setAutoSelectFirst(true);
+      setPage(p => p + 1);
+    } else {
+      setEvalMsg({ type: 'success', text: 'Evaluation saved. No more candidates match the current query.' });
     }
   };
 
@@ -276,438 +263,468 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Dual Pane Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8 items-start">
+      {/* Main Content Area */}
+      <div className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col">
         
-        {/* LEFT PANE: Candidates List, Search, Filters */}
-        <div className="w-full lg:w-3/5 bg-zinc-900/20 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-6">
-          
-          {/* Action Row */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <h3 className="text-md font-bold uppercase tracking-wider text-white">Applicants Directory</h3>
-            
-            <button
-              onClick={handleExcelExport}
-              className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all"
-            >
-              <Download size={14} />
-              <span>Export Excel</span>
-            </button>
-          </div>
-
-          {/* Search Box & Tab Filter */}
-          <div className="space-y-4">
-            {/* Search by Roll Number ONLY */}
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Search by Roll Number only..."
-                value={searchVal}
-                onChange={(e) => {
-                  setSearchVal(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-mono"
-              />
-            </div>
-
-            {/* Quick Filters */}
-            <div className="flex flex-wrap gap-1.5 border-b border-zinc-800/40 pb-2">
-              {[
-                { name: 'All', val: 'All' },
-                { name: 'Not Presented', val: 'NotPresented' },
-                { name: 'Presented', val: 'Presented' },
-                { name: 'Rated', val: 'Rated' },
-                { name: 'Not Rated', val: 'NotRated' },
-              ].map((tab) => (
-                <button
-                  key={tab.val}
-                  onClick={() => {
-                    setActiveFilter(tab.val);
-                    setPage(1);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border transition-all ${
-                    activeFilter === tab.val
-                      ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
-                      : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
-                  }`}
-                >
-                  {tab.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Table list */}
-          {loadingList ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
-            </div>
-          ) : applicants.length === 0 ? (
-            <div className="text-center py-20 border border-dashed border-zinc-800/60 rounded-2xl text-zinc-500 text-sm">
-              No matching applicants found.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="border-b border-zinc-800/60 text-zinc-500 font-bold uppercase tracking-wider">
-                    <th className="py-3 px-2 font-mono">ID</th>
-                    <th className="py-3 px-2">Name</th>
-                    <th className="py-3 px-2 font-mono">Roll Number</th>
-                    <th className="py-3 px-2 text-center">Year</th>
-                    <th className="py-3 px-2">Status</th>
-                    <th className="py-3 px-2 text-center">Rating</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applicants.map((app) => {
-                    const isSelected = selectedId === app.id;
-                    return (
-                      <tr
-                        key={app.id}
-                        onClick={() => setSelectedId(app.id)}
-                        className={`border-b border-zinc-900/60 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'bg-emerald-500/5 text-white border-l-2 border-l-emerald-500'
-                            : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-white'
-                        }`}
-                      >
-                        <td className="py-3 px-2 font-mono font-semibold text-zinc-300">
-                          {app.applicationId.replace('GFG-SVEC-2026-', '')}
-                        </td>
-                        <td className="py-3 px-2 font-bold max-w-[120px] truncate">{app.name}</td>
-                        <td className="py-3 px-2 font-mono font-semibold">{app.rollNumber}</td>
-                        <td className="py-3 px-2 text-center">{app.year}</td>
-                        <td className="py-3 px-2">
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${
-                            app.applicationStatus === 'SELECTED'
-                              ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400'
-                              : app.applicationStatus === 'REJECTED'
-                              ? 'bg-red-950/40 border-red-500/20 text-red-400'
-                              : app.applicationStatus === 'UNDER_REVIEW'
-                              ? 'bg-amber-950/40 border-amber-500/20 text-amber-400'
-                              : 'bg-zinc-950 border-zinc-800 text-zinc-500'
-                          }`}>
-                            {app.applicationStatus.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-center font-bold">
-                          {app.interviewPresented ? (
-                            app.interviewRating !== null ? (
-                              <span className="text-emerald-400 flex items-center justify-center space-x-0.5">
-                                <span>{app.interviewRating}</span>
-                                <Star size={10} className="fill-emerald-500" />
-                              </span>
-                            ) : (
-                              <span className="text-amber-500 font-mono">?</span>
-                            )
-                          ) : (
-                            <span className="text-zinc-600 font-mono">-</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-zinc-800/40 pt-4 text-xs font-bold uppercase tracking-wider font-mono">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
-                className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:border-zinc-700 disabled:opacity-30 disabled:pointer-events-none transition-all"
-              >
-                Prev
-              </button>
-              <span className="text-zinc-500">Page {page} of {totalPages}</span>
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-                className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:border-zinc-700 disabled:opacity-30 disabled:pointer-events-none transition-all"
-              >
-                Next
-              </button>
-            </div>
-          )}
-
+        {/* Mobile View Switcher Tabs */}
+        <div className="flex lg:hidden w-full border border-zinc-800 rounded-xl overflow-hidden mb-6">
+          <button
+            onClick={() => setMobileTab('directory')}
+            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-all ${
+              mobileTab === 'directory' ? 'bg-zinc-800 text-emerald-400' : 'bg-zinc-950 text-zinc-500'
+            }`}
+          >
+            Directory ({applicants.length})
+          </button>
+          <button
+            onClick={() => setMobileTab('evaluation')}
+            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-all relative ${
+              mobileTab === 'evaluation' ? 'bg-zinc-800 text-emerald-400' : 'bg-zinc-950 text-zinc-500'
+            }`}
+          >
+            Evaluation Console
+            {selectedApp && <span className="absolute top-2 right-4 w-2.5 h-2.5 bg-emerald-500 rounded-full" />}
+          </button>
         </div>
 
-        {/* RIGHT PANE: Applicant Details & Evaluation Panel */}
-        <div className="w-full lg:w-2/5 flex flex-col space-y-6">
+        {/* Responsive Dual Pane Container */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
           
-          {/* Detail display card */}
-          {loadingDetail ? (
-            <div className="bg-zinc-900/20 border border-zinc-800 rounded-3xl p-8 flex flex-col items-center justify-center min-h-[300px] w-full">
-              <Loader2 className="w-6 h-6 text-zinc-600 animate-spin mb-2" />
-              <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Retrieving candidate profile...</span>
-            </div>
-          ) : !selectedApp ? (
-            <div className="bg-zinc-900/20 border border-zinc-800 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center text-zinc-500 min-h-[400px] w-full">
-              <Users size={32} className="text-zinc-700 mb-3" />
-              <p className="font-bold text-sm uppercase tracking-wider">Select Student</p>
-              <p className="text-xs text-zinc-600 max-w-[200px] mt-1 leading-relaxed">
-                Click any row in the applicant directory to inspect their application and evaluate their interview.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6 w-full animate-fadeIn">
+          {/* LEFT PANE: Candidates List, Search, Filters */}
+          <div className={`w-full lg:w-3/5 bg-zinc-900/20 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-6 ${
+            mobileTab === 'directory' ? 'block' : 'hidden lg:block'
+          }`}>
+            
+            {/* Action Row */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <h3 className="text-md font-bold uppercase tracking-wider text-white">Applicants Directory</h3>
               
-              {/* Profile Card */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-4">
+              <button
+                onClick={handleExcelExport}
+                className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all"
+              >
+                <Download size={14} />
+                <span>Export Excel</span>
+              </button>
+            </div>
+
+            {/* Search Box & Tab Filter */}
+            <div className="space-y-4">
+              {/* Search by Roll Number ONLY */}
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search by Roll Number only..."
+                  value={searchVal}
+                  onChange={(e) => {
+                    setSearchVal(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-mono"
+                />
+              </div>
+
+              {/* Quick Filters */}
+              <div className="flex flex-wrap gap-1.5 border-b border-zinc-800/40 pb-2">
+                {[
+                  { name: 'All', val: 'All' },
+                  { name: 'Not Presented', val: 'NotPresented' },
+                  { name: 'Presented', val: 'Presented' },
+                  { name: 'Rated', val: 'Rated' },
+                  { name: 'Not Rated', val: 'NotRated' },
+                ].map((tab) => (
+                  <button
+                    key={tab.val}
+                    onClick={() => {
+                      setActiveFilter(tab.val);
+                      setPage(1);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border transition-all ${
+                      activeFilter === tab.val
+                        ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
+                        : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700'
+                    }`}
+                  >
+                    {tab.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Table list */}
+            {loadingList ? (
+              <div className="flex justify-center items-center py-20">
+                <Loader2 className="w-6 h-6 text-zinc-600 animate-spin" />
+              </div>
+            ) : applicants.length === 0 ? (
+              <div className="text-center py-20 border border-dashed border-zinc-800/60 rounded-2xl text-zinc-500 text-sm">
+                No matching applicants found.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-800/60 text-zinc-500 font-bold uppercase tracking-wider">
+                      <th className="py-3 px-2 font-mono">ID</th>
+                      <th className="py-3 px-2">Name</th>
+                      <th className="py-3 px-2 font-mono">Roll Number</th>
+                      <th className="py-3 px-2 text-center">Year</th>
+                      <th className="py-3 px-2">Status</th>
+                      <th className="py-3 px-2 text-center">Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {applicants.map((app) => {
+                      const isSelected = selectedId === app.id;
+                      return (
+                        <tr
+                          key={app.id}
+                          onClick={() => {
+                            setSelectedId(app.id);
+                            setMobileTab('evaluation'); // Auto-switch to evaluation panel on mobile click
+                          }}
+                          className={`border-b border-zinc-900/60 cursor-pointer transition-all ${
+                            isSelected
+                              ? 'bg-emerald-500/5 text-white border-l-2 border-l-emerald-500'
+                              : 'text-zinc-400 hover:bg-zinc-900/50 hover:text-white'
+                          }`}
+                        >
+                          <td className="py-3 px-2 font-mono font-semibold text-zinc-300">
+                            {app.applicationId.replace('GFG-SVEC-2026-', '')}
+                          </td>
+                          <td className="py-3 px-2 font-bold max-w-[120px] truncate">{app.name}</td>
+                          <td className="py-3 px-2 font-mono font-semibold">{app.rollNumber}</td>
+                          <td className="py-3 px-2 text-center truncate">{app.year.replace(' Year', '')}</td>
+                          <td className="py-3 px-2">
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${
+                              app.applicationStatus === 'SELECTED'
+                                ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400'
+                                : app.applicationStatus === 'REJECTED'
+                                ? 'bg-red-950/40 border-red-500/20 text-red-400'
+                                : app.applicationStatus === 'UNDER_REVIEW'
+                                ? 'bg-amber-950/40 border-amber-500/20 text-amber-400'
+                                : 'bg-zinc-950 border-zinc-800 text-zinc-500'
+                            }`}>
+                              {app.applicationStatus.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-center font-bold">
+                            {app.interviewPresented ? (
+                              app.interviewRating !== null ? (
+                                <span className="text-emerald-400 flex items-center justify-center space-x-0.5">
+                                  <span>{app.interviewRating}</span>
+                                  <Star size={10} className="fill-emerald-500" />
+                                </span>
+                              ) : (
+                                <span className="text-amber-500 font-mono">?</span>
+                              )
+                            ) : (
+                              <span className="text-zinc-600 font-mono">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-zinc-800/40 pt-4 text-xs font-bold uppercase tracking-wider font-mono">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(p => Math.max(p - 1, 1))}
+                  className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:border-zinc-700 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                >
+                  Prev
+                </button>
+                <span className="text-zinc-500">Page {page} of {totalPages}</span>
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+                  className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white hover:border-zinc-700 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+
+          </div>
+
+          {/* RIGHT PANE: Applicant Details & Evaluation Panel */}
+          <div className={`w-full lg:w-2/5 flex flex-col space-y-6 ${
+            mobileTab === 'evaluation' ? 'block' : 'hidden lg:block'
+          }`}>
+            
+            {/* Mobile Back Button */}
+            <button 
+              onClick={() => setMobileTab('directory')}
+              className="lg:hidden w-full py-3 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all mb-1"
+            >
+              <span>← Back to Directory List</span>
+            </button>
+
+            {/* Detail display card */}
+            {loadingDetail ? (
+              <div className="bg-zinc-900/20 border border-zinc-800 rounded-3xl p-8 flex flex-col items-center justify-center min-h-[300px] w-full">
+                <Loader2 className="w-6 h-6 text-zinc-600 animate-spin mb-2" />
+                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Retrieving candidate profile...</span>
+              </div>
+            ) : !selectedApp ? (
+              <div className="bg-zinc-900/20 border border-zinc-800 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center text-zinc-500 min-h-[400px] w-full">
+                <Users size={32} className="text-zinc-700 mb-3" />
+                <p className="font-bold text-sm uppercase tracking-wider">Select Student</p>
+                <p className="text-xs text-zinc-600 max-w-[200px] mt-1 leading-relaxed">
+                  Click any row in the applicant directory to inspect their application and evaluate their interview.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6 w-full animate-fadeIn">
                 
-                <div className="flex justify-between items-start border-b border-zinc-800 pb-3">
-                  <div>
-                    <span className="text-zinc-500 text-[9px] font-bold tracking-widest uppercase font-mono block">Application ID</span>
-                    <h4 className="text-md font-black text-white font-mono">{selectedApp.applicationId}</h4>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${
-                    selectedApp.applicationStatus === 'SELECTED'
-                      ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400'
-                      : selectedApp.applicationStatus === 'REJECTED'
-                      ? 'bg-red-950/40 border-red-500/20 text-red-400'
-                      : 'bg-zinc-950 border-zinc-800 text-zinc-500'
-                  }`}>
-                    {selectedApp.applicationStatus}
-                  </span>
-                </div>
-
-                {/* Candidate details grid */}
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <span className="text-zinc-500 font-bold uppercase tracking-wider">Name</span>
-                    <p className="text-white font-bold mt-0.5">{selectedApp.name}</p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 font-bold uppercase tracking-wider">Roll Number</span>
-                    <p className="text-white font-mono font-semibold mt-0.5">{selectedApp.rollNumber}</p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 font-bold uppercase tracking-wider">Year & Section</span>
-                    <p className="text-white font-semibold mt-0.5">{selectedApp.year} Year - Sec {selectedApp.section}</p>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 font-bold uppercase tracking-wider">Submitted On</span>
-                    <p className="text-white font-semibold mt-0.5 font-mono text-[10px]">
-                      {new Date(selectedApp.submittedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-3 border-t border-zinc-800/60 text-xs">
-                  <div>
-                    <span className="text-zinc-500 font-bold uppercase tracking-wider block">Interested Fields</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {selectedApp.interestedFields.map((field) => (
-                        <span key={field} className="px-2 py-0.5 bg-zinc-950 border border-zinc-800 text-zinc-400 rounded-md font-semibold text-[10px] uppercase tracking-wide">
-                          {field}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {selectedApp.hasPastExperience && selectedApp.pastExperience && (
+                {/* Profile Card */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-4">
+                  
+                  <div className="flex justify-between items-start border-b border-zinc-800 pb-3">
                     <div>
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider block">Past Experience</span>
-                      <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
-                        {selectedApp.pastExperience}
+                      <span className="text-zinc-500 text-[9px] font-bold tracking-widest uppercase font-mono block">Application ID</span>
+                      <h4 className="text-md font-black text-white font-mono">{selectedApp.applicationId}</h4>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${
+                      selectedApp.applicationStatus === 'SELECTED'
+                        ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400'
+                        : selectedApp.applicationStatus === 'REJECTED'
+                        ? 'bg-red-950/40 border-red-500/20 text-red-400'
+                        : 'bg-zinc-950 border-zinc-800 text-zinc-500'
+                    }`}>
+                      {selectedApp.applicationStatus}
+                    </span>
+                  </div>
+
+                  {/* Candidate details grid */}
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="text-zinc-500 font-bold uppercase tracking-wider">Name</span>
+                      <p className="text-white font-bold mt-0.5">{selectedApp.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 font-bold uppercase tracking-wider">Roll Number</span>
+                      <p className="text-white font-mono font-semibold mt-0.5">{selectedApp.rollNumber}</p>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 font-bold uppercase tracking-wider">Year & Section</span>
+                      <p className="text-white font-semibold mt-0.5">{selectedApp.year} - Sec {selectedApp.section}</p>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 font-bold uppercase tracking-wider">Submitted On</span>
+                      <p className="text-white font-semibold mt-0.5 font-mono text-[10px]">
+                        {new Date(selectedApp.submittedAt).toLocaleDateString()}
                       </p>
                     </div>
-                  )}
+                  </div>
 
-                  {selectedApp.previousWorkLinks && selectedApp.previousWorkLinks.length > 0 && (
+                  <div className="space-y-3 pt-3 border-t border-zinc-800/60 text-xs">
                     <div>
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider block">Previous Work / Portfolio Links</span>
-                      <div className="flex flex-col space-y-1.5 mt-1 font-mono text-[11px]">
-                        {selectedApp.previousWorkLinks.map((link) => (
-                          <a 
-                            key={link}
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 hover:underline truncate"
-                          >
-                            <ExternalLink size={12} className="shrink-0" />
-                            <span className="truncate">{link}</span>
-                          </a>
+                      <span className="text-zinc-500 font-bold uppercase tracking-wider block">Interested Fields</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedApp.interestedFields.map((field) => (
+                          <span key={field} className="px-2 py-0.5 bg-zinc-950 border border-zinc-800 text-zinc-400 rounded-md font-semibold text-[10px] uppercase tracking-wide">
+                            {ROLE_DISPLAY_NAMES[field] || field}
+                          </span>
                         ))}
                       </div>
                     </div>
-                  )}
 
-                  <div className="space-y-2.5 pt-2">
-                    <div>
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider block">Why do you want to join GFG?</span>
-                      <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
-                        {selectedApp.reasonForJoining}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider block">How do you want to contribute?</span>
-                      <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
-                        {selectedApp.contribution}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider block">What do you know about GFG?</span>
-                      <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
-                        {selectedApp.clubKnowledge}
-                      </p>
-                    </div>
-                  </div>
+                    {selectedApp.hasPastExperience && selectedApp.pastExperience && (
+                      <div>
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block">Past Experience</span>
+                        <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
+                          {selectedApp.pastExperience}
+                        </p>
+                      </div>
+                    )}
 
-                  {selectedApp.resumePath && (
-                    <div className="pt-2">
-                      <span className="text-zinc-500 font-bold uppercase tracking-wider block mb-2">Resume PDF</span>
-                      
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <a 
-                          href={`/api/admin/applications/${selectedApp.id}/resume`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-2 px-4 bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all text-[10px]"
-                        >
-                          <FileText size={12} />
-                          <span>View in New Tab</span>
-                        </a>
+                    {selectedApp.previousWorkLinks && selectedApp.previousWorkLinks.length > 0 && (
+                      <div>
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block">Previous Work / Portfolio Links</span>
+                        <div className="flex flex-col space-y-1.5 mt-1 font-mono text-[11px]">
+                          {selectedApp.previousWorkLinks.map((link) => (
+                            <a 
+                              key={link}
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-emerald-400 hover:text-emerald-300 flex items-center space-x-1 hover:underline truncate"
+                            >
+                              <ExternalLink size={12} className="shrink-0" />
+                              <span className="truncate">{link}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2.5 pt-2">
+                      <div>
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block">Why do you want to join GFG?</span>
+                        <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
+                          {selectedApp.reasonForJoining}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block">How do you want to contribute?</span>
+                        <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
+                          {selectedApp.contribution}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block">What do you know about GFG?</span>
+                        <p className="text-zinc-300 mt-1 leading-relaxed bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-900/60">
+                          {selectedApp.clubKnowledge}
+                        </p>
                       </div>
                     </div>
+
+                    {selectedApp.resumePath && (
+                      <div className="pt-2">
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block mb-2">Resume PDF</span>
+                        
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <a 
+                            href={`/api/admin/applications/${selectedApp.id}/resume`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-2 px-4 bg-zinc-950 border border-zinc-800 text-zinc-300 hover:text-white rounded-xl font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all text-[10px]"
+                          >
+                            <FileText size={12} />
+                            <span>View in New Tab</span>
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+
+                </div>
+
+                {/* EVALUATION CONSOLE */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-5">
+                  
+                  <div className="flex items-center space-x-2 border-b border-zinc-800 pb-3">
+                    <Award size={18} className="text-emerald-500" />
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-white">Interview Grading</h4>
+                  </div>
+
+                  {evalMsg && (
+                    <div className={`p-3.5 rounded-xl border text-xs flex items-start space-x-2 animate-fadeIn ${
+                      evalMsg.type === 'success' 
+                        ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400' 
+                        : 'bg-red-950/40 border-red-500/20 text-red-400'
+                    }`}>
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{evalMsg.text}</span>
+                    </div>
                   )}
 
+                  <div className="space-y-4">
+                    {/* Interview Status Dropdown */}
+                    <div className="flex flex-col space-y-1.5">
+                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Interview Status</span>
+                      <select
+                        value={evalPresented ? 'Presented' : 'NotPresented'}
+                        onChange={(e) => {
+                          const presented = e.target.value === 'Presented';
+                          setEvalPresented(presented);
+                          if (!presented) {
+                            setEvalRating(null); // Clear rating on Not Presented
+                          }
+                        }}
+                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                      >
+                        <option value="NotPresented">Not Presented (Absent)</option>
+                        <option value="Presented">Presented (Attended)</option>
+                      </select>
+                    </div>
+
+                    {/* Overall 5-Star interview rating */}
+                    <div className={`flex flex-col space-y-1.5 pt-2 border-t border-zinc-800/40 ${!evalPresented ? 'opacity-50' : ''}`}>
+                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Overall Interview Rating</span>
+                      <StarRating
+                        value={evalPresented ? evalRating : null}
+                        onChange={(val) => {
+                          if (evalPresented) {
+                            setEvalRating(val);
+                          }
+                        }}
+                        disabled={!evalPresented}
+                      />
+                    </div>
+
+                    {/* Interview Notes */}
+                    <div className="flex flex-col space-y-1.5 pt-2 border-t border-zinc-800/40">
+                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Interview Notes</span>
+                      <textarea
+                        rows={3}
+                        value={evalNotes}
+                        onChange={(e) => setEvalNotes(e.target.value)}
+                        placeholder="Record panel observation notes..."
+                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white placeholder-zinc-700 text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all resize-none"
+                      />
+                    </div>
+
+                    {/* Selection/Application Status */}
+                    <div className="flex flex-col space-y-1.5">
+                      <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Application Selection Status</span>
+                      <select
+                        value={evalStatus}
+                        onChange={(e) => setEvalStatus(e.target.value as any)}
+                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                      >
+                        <option value="NEW">New (Unreviewed)</option>
+                        <option value="UNDER_REVIEW">Under Review</option>
+                        <option value="INTERVIEWED">Interviewed</option>
+                        <option value="SELECTED">Selected</option>
+                        <option value="REJECTED">Rejected</option>
+                      </select>
+                    </div>
+
+                  </div>
+
+                  {/* Grading Action Controls */}
+                  <div className="flex items-center gap-3 pt-2">
+                    <button
+                      onClick={() => handleSaveEvaluation()}
+                      disabled={savingEval}
+                      className="flex-1 py-3 px-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all"
+                    >
+                      {savingEval ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Save size={14} />
+                      )}
+                      <span>Save Only</span>
+                    </button>
+
+                    <button
+                      onClick={handleSaveAndNext}
+                      disabled={savingEval}
+                      className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/5"
+                    >
+                      <span>Save & Next</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+
                 </div>
 
               </div>
+            )}
 
-              {/* EVALUATION CONSOLE */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-5">
-                
-                <div className="flex items-center space-x-2 border-b border-zinc-800 pb-3">
-                  <Award size={18} className="text-emerald-500" />
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-white">Interview Grading</h4>
-                </div>
-
-                {evalMsg && (
-                  <div className={`p-3.5 rounded-xl border text-xs flex items-start space-x-2 animate-fadeIn ${
-                    evalMsg.type === 'success' 
-                      ? 'bg-emerald-950/40 border-emerald-500/20 text-emerald-400' 
-                      : 'bg-red-950/40 border-red-500/20 text-red-400'
-                  }`}>
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{evalMsg.text}</span>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  {/* Interview Status Dropdown */}
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Interview Status</span>
-                    <select
-                      value={evalPresented ? 'Presented' : 'NotPresented'}
-                      onChange={(e) => {
-                        const presented = e.target.value === 'Presented';
-                        setEvalPresented(presented);
-                        if (!presented) {
-                          setEvalRating(null); // Reset rating to null on Not Presented
-                        }
-                      }}
-                      className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all"
-                    >
-                      <option value="NotPresented">Not Presented (Absent)</option>
-                      <option value="Presented">Presented (Attended)</option>
-                    </select>
-                  </div>
-
-                  {/* 5-Star Rating */}
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Interview Rating</span>
-                    <StarRating 
-                      value={evalRating} 
-                      onChange={setEvalRating} 
-                      disabled={!evalPresented} 
-                    />
-                  </div>
-
-                  {/* Interview Notes */}
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Interview Notes</span>
-                    <textarea
-                      rows={3}
-                      value={evalNotes}
-                      onChange={(e) => setEvalNotes(e.target.value)}
-                      placeholder="Record panel observation notes..."
-                      className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white placeholder-zinc-700 text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all resize-none"
-                    />
-                  </div>
-
-                  {/* Selection/Application Status */}
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Application Selection Status</span>
-                    <select
-                      value={evalStatus}
-                      onChange={(e) => setEvalStatus(e.target.value as any)}
-                      className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all"
-                    >
-                      <option value="NEW">New (Unreviewed)</option>
-                      <option value="UNDER_REVIEW">Under Review</option>
-                      <option value="INTERVIEWED">Interviewed</option>
-                      <option value="SELECTED">Selected</option>
-                      <option value="REJECTED">Rejected</option>
-                    </select>
-                  </div>
-
-                </div>
-
-                {/* Evaluation Queue Mode Selector */}
-                <div className="flex flex-col space-y-1.5 border-t border-zinc-800/60 pt-4">
-                  <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider font-mono">Active Evaluation Queue</span>
-                  <select
-                    value={queueMode}
-                    onChange={(e) => setQueueMode(e.target.value as any)}
-                    className="bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-zinc-400 text-[11px] font-semibold focus:outline-none"
-                  >
-                    <option value="ALL">All Applicants (Sequential Order)</option>
-                    <option value="PRESENTED_NOT_RATED">Presented + Not Rated (Interview Panel Queue)</option>
-                    <option value="NOT_PRESENTED">Not Presented (Absent Followup Queue)</option>
-                  </select>
-                </div>
-
-                {/* Grading Action Controls */}
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    onClick={() => handleSaveEvaluation()}
-                    disabled={savingEval}
-                    className="flex-1 py-3 px-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all"
-                  >
-                    {savingEval ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Save size={14} />
-                    )}
-                    <span>Save Only</span>
-                  </button>
-
-                  <button
-                    onClick={handleSaveAndNext}
-                    disabled={savingEval}
-                    className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/5"
-                  >
-                    <span>Save & Next</span>
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
-
-              </div>
-
-            </div>
-          )}
+          </div>
 
         </div>
-
       </div>
     </main>
   );

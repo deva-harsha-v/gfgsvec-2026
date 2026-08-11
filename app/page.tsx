@@ -6,11 +6,13 @@ import Hero from '@/components/Hero';
 import ChapterCarousel from '@/components/ChapterCarousel';
 import Countdown from '@/components/Countdown';
 import { ArrowRight, Terminal, Globe, Calendar } from 'lucide-react';
+import { RECRUITMENT_ROLES } from '@/lib/roles';
 
 export default function Home() {
   const [targetTime, setTargetTime] = useState<string>('2026-08-12T14:00:00.000Z');
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [expandedRole, setExpandedRole] = useState<string | null>(null);
 
   useEffect(() => {
     // Sync current status and target opening time from server
@@ -98,6 +100,151 @@ export default function Home() {
             <p className="text-zinc-500 text-xs md:text-sm max-w-md mx-auto font-medium">Explore each division and understand our campus body recruitment focus.</p>
           </div>
           <ChapterCarousel />
+        </div>
+
+        {/* Recruitment Roles Section */}
+        <div className="space-y-8 pt-8 border-t border-zinc-900">
+          <div className="text-center space-y-1">
+            <span className="text-emerald-500 font-mono text-[10px] font-bold tracking-[0.3em] uppercase block">Explore Opportunities</span>
+            <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tight">Recruitment Roles</h2>
+            <p className="text-zinc-500 text-xs md:text-sm max-w-md mx-auto font-medium">Click any role to see focus areas and description details.</p>
+          </div>
+
+          <div className="space-y-10 max-w-3xl mx-auto pt-4">
+            
+            {/* TECHNICAL ROLES */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                <span className="text-emerald-400 font-mono text-[11px] font-bold uppercase tracking-[0.25em]">01 — Technical Roles</span>
+                <span className="text-zinc-600 text-[10px] font-bold uppercase tracking-wider font-mono">Core Engineering</span>
+              </div>
+              
+              <div className="divide-y divide-zinc-900">
+                {RECRUITMENT_ROLES.filter(r => r.category === 'TECHNICAL').map((role) => {
+                  const isExpanded = expandedRole === role.key;
+                  return (
+                    <div key={role.key} className="group py-5 transition-all">
+                      <div 
+                        onClick={() => setExpandedRole(isExpanded ? null : role.key)}
+                        className="flex items-center justify-between cursor-pointer py-1.5"
+                      >
+                        <div className="flex items-baseline space-x-6">
+                          <span className="text-zinc-600 group-hover:text-emerald-400 font-mono text-sm font-bold transition-colors duration-300">
+                            {role.num}
+                          </span>
+                          <div className="space-y-1">
+                            <h3 className="text-zinc-200 group-hover:text-white group-hover:translate-x-1 text-sm md:text-md font-bold uppercase tracking-wider transition-all duration-300">
+                              {role.displayName}
+                            </h3>
+                            <p className="text-zinc-500 text-xs group-hover:text-zinc-400 transition-colors">
+                              {role.shortLabel}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-zinc-600 group-hover:text-emerald-400 transition-all duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
+                            →
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Expandable Content Area */}
+                      <div className={`overflow-hidden transition-all duration-350 ${isExpanded ? 'max-h-[350px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="pl-12 pr-4 pb-2 space-y-4 text-xs md:text-sm">
+                          <div className="h-[1px] bg-gradient-to-r from-emerald-500/20 to-transparent w-full" />
+                          <div className="space-y-2">
+                            <span className="text-emerald-500 font-mono text-[9px] font-bold tracking-widest uppercase block">Core Focus</span>
+                            <p className="text-zinc-300 font-medium leading-relaxed">{role.focus}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <span className="text-zinc-500 font-mono text-[9px] font-bold tracking-widest uppercase block">Role Description</span>
+                            <p className="text-zinc-400 leading-relaxed font-normal">{role.description}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <span className="text-zinc-500 font-mono text-[9px] font-bold tracking-widest uppercase block">Areas Include</span>
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {role.areas.map((area) => (
+                                <span key={area} className="px-2.5 py-1 bg-zinc-900 border border-zinc-800/80 text-zinc-400 rounded-md text-[10px] font-semibold tracking-wide">
+                                  {area}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* NON-TECHNICAL ROLES */}
+            <div className="space-y-4 pt-4">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                <span className="text-zinc-300 font-mono text-[11px] font-bold uppercase tracking-[0.25em]">02 — Non-Technical Roles</span>
+                <span className="text-zinc-600 text-[10px] font-bold uppercase tracking-wider font-mono">Operations & Branding</span>
+              </div>
+              
+              <div className="divide-y divide-zinc-900">
+                {RECRUITMENT_ROLES.filter(r => r.category === 'NON_TECHNICAL').map((role) => {
+                  const isExpanded = expandedRole === role.key;
+                  return (
+                    <div key={role.key} className="group py-5 transition-all">
+                      <div 
+                        onClick={() => setExpandedRole(isExpanded ? null : role.key)}
+                        className="flex items-center justify-between cursor-pointer py-1.5"
+                      >
+                        <div className="flex items-baseline space-x-6">
+                          <span className="text-zinc-600 group-hover:text-zinc-300 font-mono text-sm font-bold transition-colors duration-300">
+                            {role.num}
+                          </span>
+                          <div className="space-y-1">
+                            <h3 className="text-zinc-200 group-hover:text-white group-hover:translate-x-1 text-sm md:text-md font-bold uppercase tracking-wider transition-all duration-300">
+                              {role.displayName}
+                            </h3>
+                            <p className="text-zinc-500 text-xs group-hover:text-zinc-400 transition-colors">
+                              {role.shortLabel}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-zinc-600 group-hover:text-emerald-500 transition-all duration-300 ${isExpanded ? 'rotate-90 text-emerald-400' : ''}`}>
+                            →
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Expandable Content Area */}
+                      <div className={`overflow-hidden transition-all duration-350 ${isExpanded ? 'max-h-[350px] mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="pl-12 pr-4 pb-2 space-y-4 text-xs md:text-sm">
+                          <div className="h-[1px] bg-zinc-800 w-full" />
+                          <div className="space-y-2">
+                            <span className="text-zinc-400 font-mono text-[9px] font-bold tracking-widest uppercase block">Core Focus</span>
+                            <p className="text-zinc-300 font-medium leading-relaxed">{role.focus}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <span className="text-zinc-500 font-mono text-[9px] font-bold tracking-widest uppercase block">Role Description</span>
+                            <p className="text-zinc-400 leading-relaxed font-normal">{role.description}</p>
+                          </div>
+                          <div className="space-y-2">
+                            <span className="text-zinc-500 font-mono text-[9px] font-bold tracking-widest uppercase block">Areas Include</span>
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {role.areas.map((area) => (
+                                <span key={area} className="px-2.5 py-1 bg-zinc-900 border border-zinc-800/80 text-zinc-400 rounded-md text-[10px] font-semibold tracking-wide">
+                                  {area}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
         </div>
 
       </div>

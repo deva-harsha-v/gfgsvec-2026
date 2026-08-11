@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { RECRUITMENT_ROLES } from './roles';
+
+export const ALLOWED_DOMAINS = RECRUITMENT_ROLES.map((role) => role.key) as [string, ...string[]];
 
 export const ApplicantSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -7,9 +10,9 @@ export const ApplicantSchema = z.object({
     .trim()
     .min(1, 'Roll number is required')
     .toUpperCase(),
-  year: z.string().min(1, 'Year is required'),
+  year: z.enum(['2nd Year', '3rd Year'] as const),
   section: z.string().trim().min(1, 'Section is required'),
-  interestedFields: z.array(z.string()).min(1, 'Select at least one field of interest'),
+  interestedFields: z.array(z.enum(ALLOWED_DOMAINS)).min(1, 'Select at least one field of interest'),
   hasPastExperience: z.boolean(),
   pastExperience: z.string().trim().optional().nullable(),
   previousWorkLinks: z.array(z.string().trim()),
@@ -38,8 +41,8 @@ export const EvaluationSchema = z.object({
   interviewNotes: z.string().trim().nullable().optional(),
   applicationStatus: z.enum(['NEW', 'UNDER_REVIEW', 'INTERVIEWED', 'SELECTED', 'REJECTED']),
 }).refine((data) => {
-  if (!data.interviewPresented) {
-    return data.interviewRating === null || data.interviewRating === undefined;
+  if (!data.interviewPresented && data.interviewRating !== null && data.interviewRating !== undefined) {
+    return false;
   }
   return true;
 }, {

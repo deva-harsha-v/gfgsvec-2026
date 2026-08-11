@@ -4,6 +4,8 @@ import { getAdminFromRequest } from '@/lib/auth';
 import { Applicant } from '@prisma/client';
 import * as XLSX from 'xlsx';
 
+import { ROLE_DISPLAY_NAMES } from '@/lib/roles';
+
 export async function GET(req: NextRequest) {
   try {
     // 1. Authenticate Admin
@@ -18,26 +20,37 @@ export async function GET(req: NextRequest) {
     });
 
     // 3. Format Data into Table Rows
-    const data = applicants.map((app: Applicant) => ({
-      'Application ID': app.applicationId,
-      'Name': app.name,
-      'Roll Number': app.rollNumber,
-      'Year': app.year,
-      'Section': app.section,
-      'Interested Fields': app.interestedFields.join(', '),
-      'Past Experience': app.hasPastExperience ? 'Yes' : 'No',
-      'Past Experience Details': app.pastExperience || '',
-      'Previous Work / Portfolio Links': app.previousWorkLinks.join(', '),
-      'Reason For Joining': app.reasonForJoining,
-      'How They Want to Contribute': app.contribution,
-      'What They Know About Club': app.clubKnowledge,
-      'Resume URL': app.resumePath ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/applications/${app.id}/resume` : 'None',
-      'Interview Presented': app.interviewPresented ? 'Presented' : 'Not Presented',
-      'Interview Rating': app.interviewRating !== null ? app.interviewRating : 'Unrated',
-      'Interview Notes': app.interviewNotes || '',
-      'Application Status': app.applicationStatus,
-      'Submitted At': app.submittedAt.toISOString(),
-    }));
+    const data = applicants.map((app: Applicant) => {
+      let ratingValue = 'Absent';
+      if (app.interviewPresented) {
+        if (app.interviewRating !== null && app.interviewRating !== undefined) {
+          ratingValue = `${app.interviewRating} Stars`;
+        } else {
+          ratingValue = 'Presented (Not Rated)';
+        }
+      }
+
+      return {
+        'Application ID': app.applicationId,
+        'Name': app.name,
+        'Roll Number': app.rollNumber,
+        'Year': app.year,
+        'Section': app.section,
+        'Interested Fields': app.interestedFields.map(f => ROLE_DISPLAY_NAMES[f] || f).join(', '),
+        'Past Experience': app.hasPastExperience ? 'Yes' : 'No',
+        'Past Experience Details': app.pastExperience || '',
+        'Previous Work / Portfolio Links': app.previousWorkLinks.join(', '),
+        'Reason For Joining': app.reasonForJoining,
+        'How They Want to Contribute': app.contribution,
+        'What They Know About Club': app.clubKnowledge,
+        'Resume URL': app.resumePath ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/admin/applications/${app.id}/resume` : 'None',
+        'Interview Presented': app.interviewPresented ? 'Presented' : 'Not Presented',
+        'Interview Rating': ratingValue,
+        'Interview Notes': app.interviewNotes || '',
+        'Application Status': app.applicationStatus,
+        'Submitted At': app.submittedAt.toISOString(),
+      };
+    });
 
     // 4. Create Workbook using SheetJS
     const worksheet = XLSX.utils.json_to_sheet(data);

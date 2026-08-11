@@ -52,7 +52,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // 3. Strict Rating/Presented Constraint Logic
     let ratingToSave: number | null = null;
     if (interviewPresented) {
-      // Must be null or a valid number between 1 and 5
       if (interviewRating !== undefined && interviewRating !== null) {
         if (interviewRating < 1 || interviewRating > 5) {
           return NextResponse.json({ error: 'Rating must be between 1 and 5.' }, { status: 400 });
@@ -60,7 +59,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         ratingToSave = interviewRating;
       }
     } else {
-      // If not presented, rating MUST be null
+      // If not presented, rating MUST be null (enforcing strict business logic)
       ratingToSave = null;
     }
 

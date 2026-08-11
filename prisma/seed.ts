@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
@@ -36,9 +36,9 @@ async function main() {
       applicationId: 'GFG-SVEC-2026-0001',
       name: 'Aditya Vardhan',
       rollNumber: '23A81A0501',
-      year: '3',
+      year: '3rd Year',
       section: 'A',
-      interestedFields: ['Technical', 'Web Development', 'Competitive Programming'],
+      interestedFields: ['DIGITAL_DEVELOPMENT', 'COMPETITIVE_PROGRAMMING'],
       hasPastExperience: true,
       pastExperience: 'Built a portfolio website and won a local college hackathon.',
       previousWorkLinks: ['https://github.com/aditya-vardhan', 'https://linkedin.com/in/aditya-vardhan'],
@@ -55,9 +55,9 @@ async function main() {
       applicationId: 'GFG-SVEC-2026-0002',
       name: 'Bhavana Sri',
       rollNumber: '23A81A0502',
-      year: '3',
+      year: '3rd Year',
       section: 'B',
-      interestedFields: ['Non-Technical', 'Design', 'Social Media'],
+      interestedFields: ['DESIGN', 'SOCIAL_MEDIA_MARKETING'],
       hasPastExperience: true,
       pastExperience: 'Managed social media handles for the annual college fest.',
       previousWorkLinks: ['https://instagram.com/bhavana_designs', 'https://linkedin.com/in/bhavana-sri'],
@@ -66,7 +66,7 @@ async function main() {
       clubKnowledge: 'GeeksforGeeks is a major resource for technical prep, and the campus chapter promotes tech culture.',
       resumePath: null,
       interviewPresented: true,
-      interviewRating: null, // Presented but Not Rated yet
+      interviewRating: null,
       interviewNotes: 'Good UI/UX portfolio shown, interview ongoing.',
       applicationStatus: 'NEW' as const,
     },
@@ -74,9 +74,9 @@ async function main() {
       applicationId: 'GFG-SVEC-2026-0003',
       name: 'Charan Kumar',
       rollNumber: '24A81A0503',
-      year: '2',
+      year: '2nd Year',
       section: 'C',
-      interestedFields: ['Technical', 'Development'],
+      interestedFields: ['DIGITAL_DEVELOPMENT'],
       hasPastExperience: false,
       pastExperience: '',
       previousWorkLinks: [],
@@ -84,7 +84,7 @@ async function main() {
       contribution: 'I am highly enthusiastic and will volunteer in all workshops and maintain the club logs.',
       clubKnowledge: 'I know it is a coding community that helps students transition from academic subjects to actual industry tech.',
       resumePath: null,
-      interviewPresented: false, // Not Presented
+      interviewPresented: false,
       interviewRating: null,
       interviewNotes: 'Absent on first call.',
       applicationStatus: 'NEW' as const,
@@ -93,9 +93,9 @@ async function main() {
       applicationId: 'GFG-SVEC-2026-0004',
       name: 'Dinesh Reddy',
       rollNumber: '24A81A0504',
-      year: '2',
+      year: '2nd Year',
       section: 'A',
-      interestedFields: ['Technical', 'AI/ML', 'Competitive Programming'],
+      interestedFields: ['COMPETITIVE_PROGRAMMING'],
       hasPastExperience: false,
       pastExperience: '',
       previousWorkLinks: ['https://github.com/dinesh-reddy'],

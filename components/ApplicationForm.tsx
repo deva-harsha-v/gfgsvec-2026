@@ -14,36 +14,29 @@ const FormSchema = ApplicantSchema.extend({
       url: z.string().trim().url('Invalid URL format').or(z.literal('')),
     })
   ),
+  resume: z
+    .any()
+    .refine((files) => files && files.length > 0, 'Resume is required')
+    .refine((files) => !files || files.length === 0 || files[0].size <= 10 * 1024 * 1024, 'Max file size is 10MB')
+    .refine((files) => !files || files.length === 0 || files[0].type === 'application/pdf', 'Only PDF files are allowed'),
 });
 
-type FormValues = z.infer<typeof FormSchema> & {
-  resume?: FileList | null;
-};
+type FormValues = z.infer<typeof FormSchema>;
 
-const TECHNICAL_FIELDS = [
-  'Technical',
-  'Development',
-  'Coding',
-  'AI/ML',
-  'Web Development',
-  'Competitive Programming',
-];
+import { RECRUITMENT_ROLES, ROLE_DISPLAY_NAMES } from '@/lib/roles';
 
-const NON_TECHNICAL_FIELDS = [
-  'Event Management',
-  'Design',
-  'Content',
-  'Social Media',
-  'Public Relations',
-  'Marketing',
-  'Photography/Videography',
-];
+const TECHNICAL_FIELDS = RECRUITMENT_ROLES
+  .filter(r => r.category === 'TECHNICAL')
+  .map(r => r.key);
+
+const NON_TECHNICAL_FIELDS = RECRUITMENT_ROLES
+  .filter(r => r.category === 'NON_TECHNICAL')
+  .map(r => r.key);
 
 export default function ApplicationForm() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   
   const router = useRouter();
 
@@ -60,7 +53,7 @@ export default function ApplicationForm() {
     defaultValues: {
       name: '',
       rollNumber: '',
-      year: '',
+      year: '' as any,
       section: '',
       interestedFields: [],
       hasPastExperience: false,
@@ -81,6 +74,7 @@ export default function ApplicationForm() {
   const hasPastExp = watch('hasPastExperience');
   const selectedFields = watch('interestedFields') || [];
   const resumeWatch = watch('resume');
+  const uploadedFileName = resumeWatch && resumeWatch.length > 0 ? resumeWatch[0].name : null;
 
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
@@ -105,7 +99,7 @@ export default function ApplicationForm() {
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: any) => {
     setSubmitting(true);
     setServerError(null);
 
@@ -121,8 +115,8 @@ export default function ApplicationForm() {
       
       // Filter out empty links
       const cleanLinks = (data.previousWorkLinks || [])
-        .map(l => l.url.trim())
-        .filter(url => url !== '');
+        .map((l: any) => l.url.trim())
+        .filter((url: string) => url !== '');
       formData.append('previousWorkLinks', JSON.stringify(cleanLinks));
       
       formData.append('reasonForJoining', data.reasonForJoining);
@@ -152,7 +146,7 @@ export default function ApplicationForm() {
     }
   };
 
-  const toggleFieldInterest = (field: string) => {
+  const toggleFieldInterest = (field: any) => {
     const current = [...selectedFields];
     const index = current.indexOf(field);
     if (index > -1) {
@@ -161,28 +155,6 @@ export default function ApplicationForm() {
       current.push(field);
     }
     setValue('interestedFields', current, { shouldValidate: true });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type !== 'application/pdf') {
-        alert('Please upload a PDF file.');
-        e.target.value = '';
-        setUploadedFileName(null);
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be under 10MB.');
-        e.target.value = '';
-        setUploadedFileName(null);
-        return;
-      }
-      setUploadedFileName(file.name);
-    } else {
-      setUploadedFileName(null);
-    }
   };
 
   return (
@@ -254,10 +226,8 @@ export default function ApplicationForm() {
                   className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
                 >
                   <option value="">Select Year</option>
-                  <option value="1">1st Year</option>
-                  <option value="2">2nd Year</option>
-                  <option value="3">3rd Year</option>
-                  <option value="4">4th Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
                 </select>
                 {errors.year && <span className="text-red-500 text-xs font-medium mt-1">{errors.year.message}</span>}
               </div>
@@ -303,7 +273,7 @@ export default function ApplicationForm() {
                           : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                       }`}
                     >
-                      {field}
+                      {ROLE_DISPLAY_NAMES[field] || field}
                     </button>
                   ))}
                 </div>
@@ -323,7 +293,7 @@ export default function ApplicationForm() {
                           : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'
                       }`}
                     >
-                      {field}
+                      {ROLE_DISPLAY_NAMES[field] || field}
                     </button>
                   ))}
                 </div>
@@ -475,14 +445,13 @@ export default function ApplicationForm() {
 
             {/* Resume Upload Container */}
             <div className="flex flex-col space-y-3">
-              <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Upload Resume (Optional • PDF)</span>
+              <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Upload Resume * (PDF only, max 10MB)</span>
               
               <div className="relative border-2 border-dashed border-zinc-800 rounded-2xl p-8 bg-zinc-950 flex flex-col items-center justify-center text-center transition-all hover:border-zinc-700 cursor-pointer">
                 <input
                   type="file"
                   accept="application/pdf"
                   {...register('resume')}
-                  onChange={handleFileChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
                 
@@ -510,6 +479,7 @@ export default function ApplicationForm() {
                   </div>
                 )}
               </div>
+              {errors.resume && <span className="text-red-500 text-xs font-medium mt-1">{errors.resume.message as string}</span>}
             </div>
 
             {/* Consent Agreement */}

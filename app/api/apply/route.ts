@@ -83,29 +83,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Handle File Upload
-    let resumePath: string | null = null;
-    if (resumeFile && resumeFile.size > 0) {
-      // Validate PDF type
-      if (resumeFile.type !== 'application/pdf') {
-        return NextResponse.json({ error: 'Resume must be a PDF file.' }, { status: 400 });
-      }
-
-      // Validate File Size
-      if (resumeFile.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ error: 'Resume file size must not exceed 10MB.' }, { status: 400 });
-      }
-
-      // Create storage directory if it doesn't exist
-      await fs.mkdir(STORAGE_DIR, { recursive: true });
-
-      // Save file securely
-      const fileName = `${crypto.randomUUID()}_${rollNumber}.pdf`;
-      const filePath = path.join(STORAGE_DIR, fileName);
-      const fileBuffer = Buffer.from(await resumeFile.arrayBuffer());
-      await fs.writeFile(filePath, fileBuffer);
-      resumePath = fileName;
+    // 5. Handle File Upload (Compulsory PDF)
+    if (!resumeFile || resumeFile.size === 0) {
+      return NextResponse.json({ error: 'Resume PDF upload is required.' }, { status: 400 });
     }
+
+    // Validate PDF type
+    if (resumeFile.type !== 'application/pdf') {
+      return NextResponse.json({ error: 'Resume must be a PDF file.' }, { status: 400 });
+    }
+
+    // Validate File Size
+    if (resumeFile.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'Resume file size must not exceed 10MB.' }, { status: 400 });
+    }
+
+    // Create storage directory if it doesn't exist
+    await fs.mkdir(STORAGE_DIR, { recursive: true });
+
+    // Save file securely
+    const fileName = `${crypto.randomUUID()}_${rollNumber}.pdf`;
+    const filePath = path.join(STORAGE_DIR, fileName);
+    const fileBuffer = Buffer.from(await resumeFile.arrayBuffer());
+    await fs.writeFile(filePath, fileBuffer);
+    const resumePath = fileName;
 
     // 6. Transactional sequential Application ID generation
     const result = await db.$transaction(async (tx) => {

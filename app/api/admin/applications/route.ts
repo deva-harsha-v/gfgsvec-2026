@@ -70,14 +70,14 @@ export async function GET(req: NextRequest) {
       db.applicant.count({
         where: {
           interestedFields: {
-            hasSome: ['Technical', 'Development', 'Coding', 'AI/ML', 'Web Development', 'Competitive Programming'],
+            hasSome: ['DIGITAL_DEVELOPMENT', 'COMPETITIVE_PROGRAMMING'],
           },
         },
       }),
       db.applicant.count({
         where: {
           interestedFields: {
-            hasSome: ['Non-Technical', 'Event Management', 'Design', 'Content', 'Social Media', 'Public Relations', 'Marketing', 'Photography/Videography'],
+            hasSome: ['DESIGN', 'SOCIAL_MEDIA_MARKETING', 'PUBLIC_RELATIONS_OUTREACH', 'EVENT_MANAGEMENT'],
           },
         },
       }),
