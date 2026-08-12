@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApplicantSchema } from '@/lib/schemas';
@@ -38,7 +38,19 @@ export default function ApplicationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [pasteWarning, setPasteWarning] = useState<string | null>(null);
+  const [slotCounts, setSlotCounts] = useState<Record<string, number>>({});
   
+  useEffect(() => {
+    fetch('/api/recruitment-status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.slotCounts) {
+          setSlotCounts(data.slotCounts);
+        }
+      })
+      .catch(err => console.error("Error loading slot counts:", err));
+  }, []);
+
   const handlePastePrevent = (e: React.ClipboardEvent) => {
     e.preventDefault();
     setPasteWarning("Copy-pasting is disabled for this section. Please type your responses directly.");
@@ -416,11 +428,34 @@ export default function ApplicationForm() {
                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
               >
                 <option value="">-- Choose a slot --</option>
-                <option value="13th August - Forenoon Session">13th August - Forenoon Session</option>
-                <option value="13th August - Afternoon Session">13th August - Afternoon Session</option>
-                <option value="14th August - Forenoon Session">14th August - Forenoon Session</option>
-                <option value="14th August - Afternoon Session">14th August - Afternoon Session</option>
+                <option 
+                  value="13th August - Forenoon Session"
+                  disabled={(slotCounts["13th August - Forenoon Session"] || 0) >= 50}
+                >
+                  13th August - Forenoon Session {(slotCounts["13th August - Forenoon Session"] || 0) >= 50 ? ' (FULLY BOOKED)' : ` (${50 - (slotCounts["13th August - Forenoon Session"] || 0)} slots left)`}
+                </option>
+                <option 
+                  value="13th August - Afternoon Session"
+                  disabled={(slotCounts["13th August - Afternoon Session"] || 0) >= 50}
+                >
+                  13th August - Afternoon Session {(slotCounts["13th August - Afternoon Session"] || 0) >= 50 ? ' (FULLY BOOKED)' : ` (${50 - (slotCounts["13th August - Afternoon Session"] || 0)} slots left)`}
+                </option>
+                <option 
+                  value="14th August - Forenoon Session"
+                  disabled={(slotCounts["14th August - Forenoon Session"] || 0) >= 50}
+                >
+                  14th August - Forenoon Session {(slotCounts["14th August - Forenoon Session"] || 0) >= 50 ? ' (FULLY BOOKED)' : ` (${50 - (slotCounts["14th August - Forenoon Session"] || 0)} slots left)`}
+                </option>
+                <option 
+                  value="14th August - Afternoon Session"
+                  disabled={(slotCounts["14th August - Afternoon Session"] || 0) >= 50}
+                >
+                  14th August - Afternoon Session {(slotCounts["14th August - Afternoon Session"] || 0) >= 50 ? ' (FULLY BOOKED)' : ` (${50 - (slotCounts["14th August - Afternoon Session"] || 0)} slots left)`}
+                </option>
               </select>
+              <p className="text-[10px] text-zinc-500 font-mono mt-1 leading-relaxed">
+                ⚠️ Slots are strictly capped at 50 candidates each to prevent scheduling bottlenecks. If a slot reads &quot;FULLY BOOKED&quot;, please select an alternate session.
+              </p>
               {errors.interviewSlot && (
                 <span className="text-red-500 text-xs font-medium mt-1">{errors.interviewSlot.message}</span>
               )}

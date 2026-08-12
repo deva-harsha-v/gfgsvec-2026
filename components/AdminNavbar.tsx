@@ -39,7 +39,7 @@ export default function AdminNavbar() {
       </Link>
 
       {/* Nav Links */}
-      <div className="flex items-center space-x-1 md:space-x-2">
+      <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           const Icon = item.icon;

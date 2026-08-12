@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
 const START_UTC_TIME = '2026-08-12T03:30:00.000Z'; // 9:00 AM IST (Asia/Kolkata)
 const CLOSE_UTC_TIME = '2026-08-12T18:00:00.000Z'; // 11:30 PM IST (Asia/Kolkata)
@@ -22,12 +23,41 @@ export async function GET() {
     isClosed = now.getTime() >= close.getTime();
   }
 
+  // Fetch slot counts dynamically
+  const slots = [
+    "13th August - Forenoon Session",
+    "13th August - Afternoon Session",
+    "14th August - Forenoon Session",
+    "14th August - Afternoon Session"
+  ];
+  
+  const slotCountsMap: Record<string, number> = {};
+  slots.forEach(s => { slotCountsMap[s] = 0; });
+
+  try {
+    const counts = await db.applicant.groupBy({
+      by: ['interviewSlot'],
+      _count: {
+        interviewSlot: true
+      }
+    });
+
+    counts.forEach(c => {
+      if (c.interviewSlot && c.interviewSlot in slotCountsMap) {
+        slotCountsMap[c.interviewSlot] = c._count.interviewSlot;
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching slot counts:', error);
+  }
+
   return NextResponse.json({
     isOpen,
     isClosed,
     serverTime: now.toISOString(),
     startTime: START_UTC_TIME,
     closeTime: CLOSE_UTC_TIME,
+    slotCounts: slotCountsMap,
   });
 }
 export const dynamic = 'force-dynamic';

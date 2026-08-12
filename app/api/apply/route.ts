@@ -149,30 +149,55 @@ export async function POST(req: NextRequest) {
     const paddedNum = String(nextSeq).padStart(4, '0');
     const applicationId = `GFG-SVEC-2026-${paddedNum}`;
 
-    // Insert applicant
-    const result = await db.applicant.create({
-      data: {
-        applicationId,
-        name,
-        rollNumber,
-        year,
-        section,
-        interestedFields,
-        hasPastExperience,
-        pastExperience,
-        previousWorkLinks,
-        interviewSlot,
-        reasonForJoining,
-        contribution,
-        clubKnowledge,
-        resumePath,
-      },
-    });
+    // Insert applicant in a transaction with Serializable isolation level to guarantee slot limit is strictly obeyed under high concurrency
+    try {
+      const result = await db.$transaction(async (tx) => {
+        // A. Verify the interview slot is not full (limit 50)
+        if (interviewSlot) {
+          const slotCount = await tx.applicant.count({
+            where: { interviewSlot }
+          });
+          if (slotCount >= 50) {
+            throw new Error('SLOT_FULL');
+          }
+        }
 
-    return NextResponse.json({
-      success: true,
-      applicationId: result.applicationId,
-    });
+        // B. Create candidate record
+        return await tx.applicant.create({
+          data: {
+            applicationId,
+            name,
+            rollNumber,
+            year,
+            section,
+            interestedFields,
+            hasPastExperience,
+            pastExperience,
+            previousWorkLinks,
+            interviewSlot,
+            reasonForJoining,
+            contribution,
+            clubKnowledge,
+            resumePath,
+          },
+        });
+      }, {
+        isolationLevel: 'Serializable'
+      });
+
+      return NextResponse.json({
+        success: true,
+        applicationId: result.applicationId,
+      });
+    } catch (err: any) {
+      if (err.message === 'SLOT_FULL') {
+        return NextResponse.json(
+          { error: 'The selected interview slot is fully booked. Please select a different session.' },
+          { status: 409 }
+        );
+      }
+      throw err;
+    }
   } catch (error: any) {
     console.error('Submission error:', error);
     return NextResponse.json(
