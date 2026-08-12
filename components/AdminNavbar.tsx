@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Terminal, Users, Settings, LogOut } from 'lucide-react';
+import { Terminal, Users, Settings, LogOut, CheckSquare } from 'lucide-react';
 
 export default function AdminNavbar() {
   const router = useRouter();
@@ -22,6 +22,7 @@ export default function AdminNavbar() {
 
   const navItems = [
     { name: 'Dashboard & Queue', path: '/admin', icon: Users },
+    { name: 'Attendance Check-In', path: '/admin/attendance', icon: CheckSquare },
     { name: 'Change Password', path: '/admin/settings', icon: Settings },
   ];
 
