@@ -1,11 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import ApplicationForm from '@/components/ApplicationForm';
 import { ChevronLeft, Terminal, AlertCircle } from 'lucide-react';
 
-export default function ApplyPage() {
+function ApplyPageContent() {
+  const searchParams = useSearchParams();
+  const bypass = searchParams ? searchParams.get('bypass') : null;
+  const isBypassed = bypass === 'adminTest';
+
   const [isOpen, setIsOpen] = useState(true);
   const [isClosed, setIsClosed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -15,8 +20,13 @@ export default function ApplyPage() {
     fetch('/api/recruitment-status')
       .then((res) => res.json())
       .then((data) => {
-        setIsOpen(data.isOpen);
-        setIsClosed(data.isClosed);
+        if (isBypassed) {
+          setIsOpen(true);
+          setIsClosed(false);
+        } else {
+          setIsOpen(data.isOpen);
+          setIsClosed(data.isClosed);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -24,7 +34,7 @@ export default function ApplyPage() {
         setError('Failed to contact recruitment server.');
         setLoading(false);
       });
-  }, []);
+  }, [isBypassed]);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans relative">
@@ -122,4 +132,17 @@ export default function ApplyPage() {
     </main>
   );
 }
+
+export default function ApplyPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center space-y-3 font-sans">
+        <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest animate-pulse">Loading Application Page...</span>
+      </main>
+    }>
+      <ApplyPageContent />
+    </Suspense>
+  );
+}
+
 export const dynamic = 'force-dynamic';

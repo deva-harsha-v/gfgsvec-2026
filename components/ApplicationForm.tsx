@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApplicantSchema } from '@/lib/schemas';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Trash2, Upload, Check, AlertCircle, Loader } from 'lucide-react';
 
 const FormSchema = ApplicantSchema.extend({
@@ -60,6 +60,8 @@ export default function ApplicationForm() {
   };
   
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const bypass = searchParams ? searchParams.get('bypass') : '';
 
   const {
     register,
@@ -150,7 +152,7 @@ export default function ApplicationForm() {
         formData.append('resume', data.resume[0]);
       }
 
-      const response = await fetch('/api/apply', {
+      const response = await fetch(`/api/apply${bypass ? `?bypass=${bypass}` : ''}`, {
         method: 'POST',
         body: formData,
       });

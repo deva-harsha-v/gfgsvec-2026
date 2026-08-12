@@ -14,13 +14,16 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Time Check (with dev bypass)
+    // 1. Time Check (with dev/admin bypass)
+    const { searchParams } = new URL(req.url);
+    const bypass = searchParams.get('bypass');
+    const isBypassed = bypass === 'adminTest';
     const now = new Date();
     const start = new Date(START_UTC_TIME);
     const close = new Date(CLOSE_UTC_TIME);
     const isDev = process.env.NODE_ENV === 'development';
 
-    if (!isDev) {
+    if (!isDev && !isBypassed) {
       if (now.getTime() < start.getTime()) {
         return NextResponse.json(
           { error: 'Applications are not open yet.' },
