@@ -37,6 +37,15 @@ export default function ApplicationForm() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [pasteWarning, setPasteWarning] = useState<string | null>(null);
+  
+  const handlePastePrevent = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    setPasteWarning("Copy-pasting is disabled for this section. Please type your responses directly.");
+    setTimeout(() => {
+      setPasteWarning(null);
+    }, 5000);
+  };
   
   const router = useRouter();
 
@@ -178,6 +187,13 @@ export default function ApplicationForm() {
         <div className="mb-6 p-4 bg-red-950/40 border border-red-500/20 text-red-400 rounded-xl text-sm flex items-start space-x-2">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           <span>{serverError}</span>
+        </div>
+      )}
+
+      {pasteWarning && (
+        <div className="mb-6 p-4 bg-red-950/40 border border-red-500/20 text-red-400 rounded-xl text-sm flex items-start space-x-2 animate-pulse">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <span>{pasteWarning}</span>
         </div>
       )}
 
@@ -404,6 +420,7 @@ export default function ApplicationForm() {
                 rows={4}
                 placeholder="Share what drives you to be part of this community..."
                 {...register('reasonForJoining')}
+                onPaste={handlePastePrevent}
                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
               />
               {errors.reasonForJoining && <span className="text-red-500 text-xs font-medium mt-1">{errors.reasonForJoining.message}</span>}
@@ -416,6 +433,7 @@ export default function ApplicationForm() {
                 rows={4}
                 placeholder="Describe how you can add value (mentorship, projects, design, PR...)"
                 {...register('contribution')}
+                onPaste={handlePastePrevent}
                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
               />
               {errors.contribution && <span className="text-red-500 text-xs font-medium mt-1">{errors.contribution.message}</span>}
@@ -428,6 +446,7 @@ export default function ApplicationForm() {
                 rows={4}
                 placeholder="Explain your understanding of GeeksforGeeks and our campus chapters..."
                 {...register('clubKnowledge')}
+                onPaste={handlePastePrevent}
                 className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
               />
               {errors.clubKnowledge && <span className="text-red-500 text-xs font-medium mt-1">{errors.clubKnowledge.message}</span>}
