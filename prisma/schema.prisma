@@ -26,6 +26,7 @@ model Applicant {
   interviewNonTechnicalRating Int?              // Non-technical rating (1 to 5)
   interviewNotes     String?
   attendanceScannedAt DateTime?         // Timestamp of QR check-in
+  interviewSlot      String?           // Selected interview availability slot
   applicationStatus  ApplicationStatus @default(NEW)
   submittedAt        DateTime          @default(now())
   createdAt          DateTime          @default(now())

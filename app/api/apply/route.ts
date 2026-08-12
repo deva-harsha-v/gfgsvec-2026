@@ -5,8 +5,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const START_UTC_TIME = '2026-08-10T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
-const CLOSE_UTC_TIME = '2026-08-12T17:30:00.000Z'; // 11:00 PM IST (Asia/Kolkata)
+const START_UTC_TIME = '2026-08-12T14:00:00.000Z'; // 7:30 PM IST (Asia/Kolkata)
+const CLOSE_UTC_TIME = '2026-08-12T16:30:00.000Z'; // 10:00 PM IST (Asia/Kolkata)
 const STORAGE_DIR = process.env.VERCEL
   ? path.join('/tmp', 'resumes')
   : path.join(process.cwd(), 'storage', 'resumes');
@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
     const reasonForJoining = formData.get('reasonForJoining') as string;
     const contribution = formData.get('contribution') as string;
     const clubKnowledge = formData.get('clubKnowledge') as string;
+    const interviewSlot = formData.get('interviewSlot') as string || '';
     const resumeFile = formData.get('resume') as File | null;
 
     // 3. Schema Validation
@@ -75,6 +76,7 @@ export async function POST(req: NextRequest) {
       hasPastExperience,
       pastExperience,
       previousWorkLinks,
+      interviewSlot,
       reasonForJoining,
       contribution,
       clubKnowledge,
@@ -159,6 +161,7 @@ export async function POST(req: NextRequest) {
         hasPastExperience,
         pastExperience,
         previousWorkLinks,
+        interviewSlot,
         reasonForJoining,
         contribution,
         clubKnowledge,

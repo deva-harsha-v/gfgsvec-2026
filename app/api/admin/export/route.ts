@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
         'Past Experience': app.hasPastExperience ? 'Yes' : 'No',
         'Past Experience Details': app.pastExperience || '',
         'Previous Work / Portfolio Links': app.previousWorkLinks.join(', '),
+        'Selected Interview Slot': app.interviewSlot || 'N/A',
         'Reason For Joining': app.reasonForJoining,
         'How They Want to Contribute': app.contribution,
         'What They Know About Club': app.clubKnowledge,

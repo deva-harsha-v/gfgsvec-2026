@@ -68,6 +68,7 @@ export default function ApplicationForm() {
       hasPastExperience: false,
       pastExperience: '',
       previousWorkLinks: [{ url: '' }],
+      interviewSlot: '',
       reasonForJoining: '',
       contribution: '',
       clubKnowledge: '',
@@ -90,7 +91,7 @@ export default function ApplicationForm() {
     if (step === 1) {
       fieldsToValidate = ['name', 'rollNumber', 'year', 'section'];
     } else if (step === 2) {
-      fieldsToValidate = ['interestedFields', 'previousWorkLinks'];
+      fieldsToValidate = ['interestedFields', 'previousWorkLinks', 'interviewSlot'];
       if (hasPastExp) {
         fieldsToValidate.push('pastExperience');
       }
@@ -127,6 +128,7 @@ export default function ApplicationForm() {
         .map((l: any) => l.url.trim())
         .filter((url: string) => url !== '');
       formData.append('previousWorkLinks', JSON.stringify(cleanLinks));
+      formData.append('interviewSlot', data.interviewSlot);
       
       formData.append('reasonForJoining', data.reasonForJoining);
       formData.append('contribution', data.contribution);
@@ -401,6 +403,27 @@ export default function ApplicationForm() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Interview Slot Selection */}
+            <div className="flex flex-col space-y-2 pt-2 border-t border-zinc-800/40 font-sans">
+              <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider" htmlFor="interviewSlot">
+                Select your Interview Availability Slot *
+              </label>
+              <select
+                id="interviewSlot"
+                {...register('interviewSlot')}
+                className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
+              >
+                <option value="">-- Choose a slot --</option>
+                <option value="13th August - Forenoon Session">13th August - Forenoon Session</option>
+                <option value="13th August - Afternoon Session">13th August - Afternoon Session</option>
+                <option value="14th August - Forenoon Session">14th August - Forenoon Session</option>
+                <option value="14th August - Afternoon Session">14th August - Afternoon Session</option>
+              </select>
+              {errors.interviewSlot && (
+                <span className="text-red-500 text-xs font-medium mt-1">{errors.interviewSlot.message}</span>
+              )}
             </div>
           </div>
         )}

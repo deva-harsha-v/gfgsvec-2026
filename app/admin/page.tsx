@@ -26,6 +26,7 @@ interface Applicant {
   contribution: string;
   clubKnowledge: string;
   resumePath: string | null;
+  interviewSlot: string | null;
   interviewPresented: boolean;
   interviewTechnicalRating: number | null;
   interviewNonTechnicalRating: number | null;
@@ -576,6 +577,15 @@ export default function AdminDashboard() {
                       </div>
                     )}
 
+                    {selectedApp.interviewSlot && (
+                      <div>
+                        <span className="text-zinc-500 font-bold uppercase tracking-wider block">Interview Availability Slot</span>
+                        <p className="text-emerald-400 font-mono text-xs mt-1 leading-relaxed bg-emerald-950/20 px-3 py-2.5 rounded-xl border border-emerald-500/20">
+                          {selectedApp.interviewSlot}
+                        </p>
+                      </div>
+                    )}
+
                     <div className="space-y-2.5 pt-2">
                       <div>
                         <span className="text-zinc-500 font-bold uppercase tracking-wider block">Why do you want to join GFG?</span>
@@ -691,11 +701,11 @@ export default function AdminDashboard() {
                     <div className="flex flex-col space-y-1.5 pt-2 border-t border-zinc-800/40">
                       <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Interview Notes</span>
                       <textarea
-                        rows={3}
+                        rows={6}
                         value={evalNotes}
                         onChange={(e) => setEvalNotes(e.target.value)}
                         placeholder="Record panel observation notes..."
-                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white placeholder-zinc-700 text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all resize-none"
+                        className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white placeholder-zinc-700 text-xs font-medium focus:outline-none focus:border-emerald-500 transition-all resize-y min-h-[100px]"
                       />
                     </div>
 

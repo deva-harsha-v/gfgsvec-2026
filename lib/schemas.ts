@@ -16,6 +16,7 @@ export const ApplicantSchema = z.object({
   hasPastExperience: z.boolean(),
   pastExperience: z.string().trim().optional().nullable(),
   previousWorkLinks: z.array(z.string().trim()),
+  interviewSlot: z.string().trim().min(1, 'Please select an interview availability slot'),
   reasonForJoining: z.string().trim().min(10, 'Please provide a more detailed reason (minimum 10 characters)'),
   contribution: z.string().trim().min(10, 'Please detail how you want to contribute (minimum 10 characters)'),
   clubKnowledge: z.string().trim().min(10, 'Please share what you know about the club (minimum 10 characters)'),

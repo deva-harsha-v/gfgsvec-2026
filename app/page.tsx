@@ -9,8 +9,8 @@ import { ArrowRight, Terminal, Globe, Calendar } from 'lucide-react';
 import { RECRUITMENT_ROLES } from '@/lib/roles';
 
 export default function Home() {
-  const [targetTime, setTargetTime] = useState<string>('2026-08-10T14:00:00.000Z');
-  const [isOpen, setIsOpen] = useState(true);
+  const [targetTime, setTargetTime] = useState<string>('2026-08-12T14:00:00.000Z');
+  const [isOpen, setIsOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-2 p-6 bg-zinc-900/50 border border-red-500/20 rounded-2xl max-w-lg mx-auto backdrop-blur">
               <span className="text-red-400 font-semibold tracking-wider text-sm uppercase">Recruitment Status</span>
               <h3 className="text-2xl md:text-3xl font-extrabold text-white text-center">APPLICATIONS ARE NOW CLOSED</h3>
-              <p className="text-zinc-500 text-xs font-mono mt-1 text-center">DEADLINE WAS 12 AUGUST 2026, 11:00 PM IST</p>
+              <p className="text-zinc-500 text-xs font-mono mt-1 text-center">DEADLINE WAS 12 AUGUST 2026, 10:00 PM IST</p>
             </div>
           ) : (
             <Countdown targetTimeStr={targetTime} onComplete={handleCountdownComplete} />
@@ -86,7 +86,7 @@ export default function Home() {
             <span className="hidden md:inline text-zinc-700">•</span>
             <div className="flex items-center space-x-1.5">
               <Globe className="w-4 h-4 text-emerald-500/60" />
-              <span>7:30 PM - 11:00 PM IST (Asia/Kolkata)</span>
+              <span>7:30 PM - 10:00 PM IST (Asia/Kolkata)</span>
             </div>
           </div>
         </div>
