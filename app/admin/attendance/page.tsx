@@ -486,7 +486,7 @@ export default function AttendancePage() {
                       <div>
                         <p className="text-xs font-bold text-zinc-300">{app.name}</p>
                         <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
-                          {app.rollNumber} • DB Year: <span className="text-red-400">"{app.rawYear || 'None'}"</span>
+                          {app.rollNumber} • DB Year: <span className="text-red-400">&quot;{app.rawYear || 'None'}&quot;</span>
                         </p>
                       </div>
                       <span className="text-[9px] font-mono text-zinc-600">
@@ -496,7 +496,7 @@ export default function AttendancePage() {
                   ))}
                 </div>
                 <p className="text-[10px] text-zinc-500 font-mono mt-3 leading-relaxed">
-                  ⚠️ Note: The records above could not be matched to either "2nd Year" or "3rd Year" lists automatically. They will be excluded from the Excel reports until manually corrected in the candidate database profile page.
+                  ⚠️ Note: The records above could not be matched to either &quot;2nd Year&quot; or &quot;3rd Year&quot; lists automatically. They will be excluded from the Excel reports until manually corrected in the candidate database profile page.
                 </p>
               </div>
             )}
