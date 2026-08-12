@@ -91,7 +91,7 @@ export default function ApplyPage() {
             </div>
             <h3 className="text-xl font-bold text-white uppercase">Applications Closed</h3>
             <p className="text-zinc-400 text-sm leading-relaxed">
-              Recruitment registration forms are now closed. The deadline of 12 August 2026, 11:30 PM IST has passed.
+              Recruitment registration forms are now closed. The deadline of 12 August 2026, 07:30 PM IST has passed.
             </p>
             <Link href="/" className="inline-block py-2.5 px-6 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition-all">
               Go to Home
