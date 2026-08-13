@@ -17,6 +17,7 @@ export async function GET(req: NextRequest) {
     // 2. Parse Query Parameter
     const { searchParams } = new URL(req.url);
     const yearParam = searchParams.get('year'); // '2nd' or '3rd'
+    const session = searchParams.get('session'); // e.g. "13th August - Forenoon Session"
     
     if (yearParam !== '2nd' && yearParam !== '3rd') {
       return NextResponse.json({ error: 'Invalid year parameter. Use "2nd" or "3rd".' }, { status: 400 });
@@ -24,16 +25,22 @@ export async function GET(req: NextRequest) {
 
     const targetYearLabel = yearParam === '2nd' ? '2nd Year' : '3rd Year';
 
-    // 3. Query today's check-ins
-    const { start, end } = getTodayBoundaries();
+    // 3. Query check-ins (by session or fallback to today's boundaries)
+    const whereClause: any = {
+      interviewPresented: true,
+    };
+    if (session) {
+      whereClause.interviewSlot = session;
+    } else {
+      const { start, end } = getTodayBoundaries();
+      whereClause.attendanceScannedAt = {
+        gte: start,
+        lte: end,
+      };
+    }
+
     const checkedInToday = await db.applicant.findMany({
-      where: {
-        interviewPresented: true,
-        attendanceScannedAt: {
-          gte: start,
-          lte: end,
-        },
-      },
+      where: whereClause,
       orderBy: {
         attendanceScannedAt: 'asc', // Ascending order matches chronological arrival time
       },
@@ -102,7 +109,8 @@ export async function GET(req: NextRequest) {
 
     // Format current date suffix e.g. 2026-08-12
     const dateStr = new Date().toISOString().split('T')[0];
-    const filename = `GFG_SVEC_${yearParam}_Year_Attendance_${dateStr}.xlsx`;
+    const sessionLabel = session ? session.replace(/[\s-]+/g, '_') : dateStr;
+    const filename = `GFG_SVEC_${yearParam}_Year_Attendance_${sessionLabel}.xlsx`;
 
     return new Response(buffer, {
       headers: {

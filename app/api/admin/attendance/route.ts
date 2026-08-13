@@ -11,12 +11,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    const { rollNumber } = await req.json();
+    const { rollNumber, session } = await req.json();
     if (!rollNumber) {
       return NextResponse.json({ error: 'Roll number is required.' }, { status: 400 });
     }
 
     const normalizedRoll = normalizeRollNumber(rollNumber);
+
+    // 1.5 Fetch candidate profile first to verify registration slot
+    const applicant = await db.applicant.findUnique({
+      where: { rollNumber: normalizedRoll },
+    });
+
+    if (!applicant) {
+      return NextResponse.json({ error: `Roll number ${normalizedRoll} is not registered.` }, { status: 404 });
+    }
+
+    // Verify session match to prevent overlaps
+    if (session && applicant.interviewSlot !== session) {
+      return NextResponse.json({ 
+        error: `This student is registered for "${applicant.interviewSlot || 'No Slot'}", not the selected "${session}" slot.`
+      }, { status: 400 });
+    }
 
     // 2. Atomic Database Update (prevents race conditions)
     const scanTime = new Date();
@@ -24,6 +40,7 @@ export async function POST(req: NextRequest) {
       where: {
         rollNumber: normalizedRoll,
         interviewPresented: false,
+        ...(session ? { interviewSlot: session } : {}),
       },
       data: {
         interviewPresented: true,
@@ -31,18 +48,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    const resolvedYear = determineApplicantYear(applicant.year, applicant.rollNumber);
+
     if (updateResult.count === 1) {
-      // Fetch details of newly checked-in candidate
-      const applicant = await db.applicant.findUnique({
-        where: { rollNumber: normalizedRoll },
-      });
-      
-      if (!applicant) {
-        return NextResponse.json({ error: 'Error fetching updated candidate.' }, { status: 500 });
-      }
-
-      const resolvedYear = determineApplicantYear(applicant.year, applicant.rollNumber);
-
       return NextResponse.json({
         success: true,
         status: 'checked_in',
@@ -59,29 +67,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Fallback check for already checked-in or unregistered candidates
-    const existingApplicant = await db.applicant.findUnique({
-      where: { rollNumber: normalizedRoll },
-    });
-
-    if (!existingApplicant) {
-      return NextResponse.json({ error: `Roll number ${normalizedRoll} is not registered.` }, { status: 404 });
-    }
-
-    const resolvedYear = determineApplicantYear(existingApplicant.year, existingApplicant.rollNumber);
-
+    // 3. Candidate already checked in
     return NextResponse.json({
       success: true,
       status: 'already_checked_in',
       isNew: false,
       applicant: {
-        id: existingApplicant.id,
-        applicationId: existingApplicant.applicationId,
-        name: existingApplicant.name,
-        rollNumber: existingApplicant.rollNumber,
+        id: applicant.id,
+        applicationId: applicant.applicationId,
+        name: applicant.name,
+        rollNumber: applicant.rollNumber,
         year: resolvedYear,
-        section: existingApplicant.section,
-        scannedAt: existingApplicant.attendanceScannedAt ? existingApplicant.attendanceScannedAt.toISOString() : null,
+        section: applicant.section,
+        scannedAt: applicant.attendanceScannedAt ? applicant.attendanceScannedAt.toISOString() : null,
       },
     });
 
@@ -99,17 +97,25 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    // 2. Query today's check-ins only
-    const { start, end } = getTodayBoundaries();
+    // 2. Parse session parameter and query check-ins
+    const { searchParams } = new URL(req.url);
+    const session = searchParams.get('session'); // e.g. "13th August - Forenoon Session"
+
+    const whereClause: any = {
+      interviewPresented: true,
+    };
+    if (session) {
+      whereClause.interviewSlot = session;
+    } else {
+      const { start, end } = getTodayBoundaries();
+      whereClause.attendanceScannedAt = {
+        gte: start,
+        lte: end,
+      };
+    }
 
     const checkedInToday = await db.applicant.findMany({
-      where: {
-        interviewPresented: true,
-        attendanceScannedAt: {
-          gte: start,
-          lte: end,
-        },
-      },
+      where: whereClause,
       orderBy: {
         attendanceScannedAt: 'desc',
       },

@@ -30,9 +30,17 @@ interface AttendanceRecord {
   rawYear?: string;
 }
 
+const SESSIONS = [
+  '13th August - Forenoon Session',
+  '13th August - Afternoon Session',
+  '14th August - Forenoon Session',
+  '14th August - Afternoon Session'
+];
+
 export default function AttendancePage() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [selectedSession, setSelectedSession] = useState<string>('13th August - Forenoon Session');
   
   // Lists
   const [secondYear, setSecondYear] = useState<AttendanceRecord[]>([]);
@@ -98,7 +106,7 @@ export default function AttendancePage() {
   // Fetch lists
   const fetchAttendanceList = async () => {
     try {
-      const res = await fetch('/api/admin/attendance');
+      const res = await fetch(`/api/admin/attendance?session=${encodeURIComponent(selectedSession)}`);
       if (res.status === 401) {
         router.push('/admin/login');
         return;
@@ -121,7 +129,7 @@ export default function AttendancePage() {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, []);
+  }, [selectedSession]);
 
   // Initialize/Clean up html5-qrcode
   useEffect(() => {
@@ -227,7 +235,7 @@ export default function AttendancePage() {
       const res = await fetch('/api/admin/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rollNumber: targetRoll }),
+        body: JSON.stringify({ rollNumber: targetRoll, session: selectedSession }),
       });
 
       const data = await res.json();
@@ -285,7 +293,7 @@ export default function AttendancePage() {
   };
 
   const handleExport = (year: '2nd' | '3rd') => {
-    window.open(`/api/admin/export-attendance?year=${year}`, '_blank');
+    window.open(`/api/admin/export-attendance?year=${year}&session=${encodeURIComponent(selectedSession)}`, '_blank');
   };
 
   if (checkingAuth) {
@@ -313,6 +321,22 @@ export default function AttendancePage() {
             <p className="text-zinc-500 text-xs mt-1 font-mono uppercase tracking-wider">
               Scan Sri Vasavi College ID cards to register attendance and download reports for HOD
             </p>
+
+            {/* Session Dropdown Selector */}
+            <div className="mt-4 flex items-center space-x-2">
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest font-mono">Active Session:</span>
+              <select
+                value={selectedSession}
+                onChange={(e) => setSelectedSession(e.target.value)}
+                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all font-semibold font-mono"
+              >
+                {SESSIONS.map((sess) => (
+                  <option key={sess} value={sess} className="bg-zinc-950 text-zinc-355">
+                    {sess}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
