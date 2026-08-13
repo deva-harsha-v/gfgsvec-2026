@@ -250,6 +250,10 @@ export default function AdminDashboard() {
     window.open('/api/admin/export', '_blank');
   };
 
+  const handleExportReviewed = (day: '13th' | '14th') => {
+    window.open(`/api/admin/export-reviewed?day=${day}`, '_blank');
+  };
+
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center space-y-3">
@@ -369,16 +373,32 @@ export default function AdminDashboard() {
           }`}>
             
             {/* Action Row */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex flex-col xl:flex-row gap-4 items-center justify-between">
               <h3 className="text-md font-bold uppercase tracking-wider text-white">Applicants Directory</h3>
               
-              <button
-                onClick={handleExcelExport}
-                className="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all"
-              >
-                <Download size={14} />
-                <span>Export Excel</span>
-              </button>
+              <div className="flex flex-wrap gap-2 w-full xl:w-auto">
+                <button
+                  onClick={handleExcelExport}
+                  className="flex-1 xl:flex-none px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all hover:text-white border border-zinc-700"
+                >
+                  <Download size={14} />
+                  <span>Export All</span>
+                </button>
+                <button
+                  onClick={() => handleExportReviewed('13th')}
+                  className="flex-1 xl:flex-none px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all"
+                >
+                  <Download size={14} />
+                  <span>13th Reviewed</span>
+                </button>
+                <button
+                  onClick={() => handleExportReviewed('14th')}
+                  className="flex-1 xl:flex-none px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center space-x-1.5 transition-all"
+                >
+                  <Download size={14} />
+                  <span>14th Reviewed</span>
+                </button>
+              </div>
             </div>
 
             {/* Search Box & Tab Filter */}
