@@ -816,27 +816,18 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Grading Action Controls */}
-                  <div className="flex items-center gap-3 pt-2">
+                  <div className="pt-2">
                     <button
                       onClick={() => handleSaveEvaluation()}
                       disabled={savingEval}
-                      className="flex-1 py-3 px-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all"
+                      className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all shadow-lg shadow-emerald-950/10"
                     >
                       {savingEval ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <Save size={14} />
                       )}
-                      <span>Save Only</span>
-                    </button>
-
-                    <button
-                      onClick={handleSaveAndNext}
-                      disabled={savingEval}
-                      className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-1.5 disabled:opacity-50 transition-all shadow-lg shadow-emerald-500/5"
-                    >
-                      <span>Save & Next</span>
-                      <ArrowRight size={14} />
+                      <span>Save Evaluation</span>
                     </button>
                   </div>
 
