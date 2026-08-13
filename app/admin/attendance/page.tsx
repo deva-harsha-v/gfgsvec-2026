@@ -17,7 +17,8 @@ import {
   Clock,
   Power,
   HelpCircle,
-  ChevronDown
+  ChevronDown,
+  AlertCircle
 } from 'lucide-react';
 
 interface AttendanceRecord {
@@ -65,6 +66,17 @@ export default function AttendancePage() {
   const html5QrCodeRef = useRef<any>(null);
   const [isManualOpen, setIsManualOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+
+  // Spot Registration Form states
+  const [isSpotOpen, setIsSpotOpen] = useState(false);
+  const [spotName, setSpotName] = useState('');
+  const [spotRoll, setSpotRoll] = useState('');
+  const [spotYear, setSpotYear] = useState('2nd Year');
+  const [spotSection, setSpotSection] = useState('A');
+  const [spotLoading, setSpotLoading] = useState(false);
+
+  // Search filter state for checked-in lists
+  const [listSearch, setListSearch] = useState('');
 
   // Synthesize custom check-in audio notifications
   const playSound = (type: 'success' | 'warning' | 'error') => {
@@ -285,6 +297,67 @@ export default function AttendancePage() {
     }
   };
 
+  const handleSpotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!spotName.trim() || !spotRoll.trim() || !spotYear || !spotSection) {
+      setFeedback({
+        type: 'error',
+        title: 'Validation Error',
+        text: 'All fields are required for spot registration.',
+      });
+      return;
+    }
+
+    setSpotLoading(true);
+    setFeedback(null);
+
+    try {
+      const res = await fetch('/api/admin/spot-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: spotName.trim(),
+          rollNumber: spotRoll.trim(),
+          year: spotYear,
+          section: spotSection.trim(),
+          interviewSlot: selectedSession,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        playSound('success');
+        setFeedback({
+          type: 'success',
+          title: 'Spot Registered Successfully!',
+          text: `${data.applicant.name} (${data.applicant.rollNumber})`,
+          details: `${data.applicant.year} • Section ${data.applicant.section} • Checked In`,
+        });
+        setSpotName('');
+        setSpotRoll('');
+        setIsSpotOpen(false);
+        fetchAttendanceList();
+      } else {
+        playSound('error');
+        setFeedback({
+          type: 'error',
+          title: 'Spot Registration Failed',
+          text: data.error || 'Failed to register candidate.',
+        });
+      }
+    } catch (err) {
+      playSound('error');
+      setFeedback({
+        type: 'error',
+        title: 'Network Error',
+        text: 'Could not connect to the registration server.',
+      });
+    } finally {
+      setSpotLoading(false);
+    }
+  };
+
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
@@ -305,11 +378,29 @@ export default function AttendancePage() {
     );
   }
 
+  const filteredSecondYear = secondYear.filter(app => 
+    app.rollNumber.toLowerCase().includes(listSearch.toLowerCase().trim())
+  );
+  const filteredThirdYear = thirdYear.filter(app => 
+    app.rollNumber.toLowerCase().includes(listSearch.toLowerCase().trim())
+  );
+  const filteredUnknown = unknown.filter(app => 
+    app.rollNumber.toLowerCase().includes(listSearch.toLowerCase().trim())
+  );
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
       <AdminNavbar />
 
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:px-8 flex flex-col space-y-8">
+        
+        {/* Critical Reminder Alert */}
+        <div className="bg-amber-950/20 border border-amber-500/20 rounded-2xl p-4 flex items-center space-x-3 text-amber-400">
+          <AlertCircle className="w-5 h-5 shrink-0 animate-pulse text-amber-500" />
+          <span className="text-xs font-mono font-bold uppercase tracking-wider leading-relaxed">
+            ⚠️ CRITICAL: Ensure you select the correct <span className="text-white underline">Active Session</span> dropdown in the header below BEFORE scanning student ID cards!
+          </span>
+        </div>
         
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-zinc-900 pb-6">
@@ -324,14 +415,14 @@ export default function AttendancePage() {
 
             {/* Session Dropdown Selector */}
             <div className="mt-4 flex items-center space-x-2">
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest font-mono">Active Session:</span>
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest font-mono">Active Session:</span>
               <select
                 value={selectedSession}
                 onChange={(e) => setSelectedSession(e.target.value)}
-                className="bg-zinc-900 border border-zinc-850 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-all font-semibold font-mono"
+                className="bg-zinc-900 border-2 border-emerald-500/60 shadow-[0_0_10px_#10b98130] rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400 transition-all font-bold font-mono animate-pulse hover:animate-none"
               >
                 {SESSIONS.map((sess) => (
-                  <option key={sess} value={sess} className="bg-zinc-950 text-zinc-355">
+                  <option key={sess} value={sess} className="bg-zinc-950 text-zinc-300">
                     {sess}
                   </option>
                 ))}
@@ -496,6 +587,93 @@ export default function AttendancePage() {
               )}
             </div>
 
+            {/* Collapsible Accordion Drawer: Spot Registration (Add Student Manually) */}
+            <div className="border border-zinc-800 rounded-2xl overflow-hidden bg-zinc-950/60 shadow-md">
+              <button
+                type="button"
+                onClick={() => setIsSpotOpen(!isSpotOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold font-mono text-zinc-400 hover:text-white uppercase transition-colors"
+              >
+                <span className="flex items-center space-x-2">
+                  <UserCheck size={14} className="text-zinc-500" />
+                  <span>➕ Spot Registration (Add Student Manually)</span>
+                </span>
+                <ChevronDown size={14} className={`transform transition-transform duration-200 ${isSpotOpen ? 'rotate-180 text-emerald-400' : 'text-zinc-500'}`} />
+              </button>
+
+              {isSpotOpen && (
+                <div className="p-4 border-t border-zinc-900/60 bg-zinc-950 animate-fadeIn space-y-4">
+                  <form onSubmit={handleSpotSubmit} className="space-y-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 font-mono">Student Name</label>
+                      <input
+                        type="text"
+                        value={spotName}
+                        onChange={(e) => setSpotName(e.target.value)}
+                        placeholder="Enter full name..."
+                        required
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-700 text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 font-mono">Roll Number</label>
+                      <input
+                        type="text"
+                        value={spotRoll}
+                        onChange={(e) => setSpotRoll(e.target.value)}
+                        placeholder="Enter roll number (e.g. 23A81A...)"
+                        required
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-700 text-xs font-mono uppercase focus:outline-none focus:border-emerald-500 transition-all"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 font-mono">Year</label>
+                        <select
+                          value={spotYear}
+                          onChange={(e) => setSpotYear(e.target.value)}
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs font-semibold focus:outline-none focus:border-emerald-500 transition-all"
+                        >
+                          <option value="2nd Year">2nd Year</option>
+                          <option value="3rd Year">3rd Year</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1 font-mono">Section</label>
+                        <input
+                          type="text"
+                          maxLength={1}
+                          value={spotSection}
+                          onChange={(e) => setSpotSection(e.target.value)}
+                          placeholder="e.g. A"
+                          required
+                          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-700 text-xs font-semibold uppercase text-center focus:outline-none focus:border-emerald-500 transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={spotLoading}
+                      className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center space-x-1.5"
+                    >
+                      {spotLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <UserCheck size={14} />
+                          <span>Register & Check-In Student</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+
             {/* Scan Feedback Board */}
             {feedback && (
               <div className={`border rounded-3xl p-5 flex items-start space-x-3.5 animate-fade-in shadow-lg ${
@@ -521,7 +699,23 @@ export default function AttendancePage() {
           </div>
 
           {/* Checked-In Candidates Playfield */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Search Input for Checked-In candidates */}
+            <div className="bg-zinc-900/20 border border-zinc-900 rounded-3xl p-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <span className="text-[10px] font-bold text-zinc-550 uppercase tracking-wider font-mono">🔍 Search Checked-In Desk:</span>
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
+                <input
+                  type="text"
+                  value={listSearch}
+                  onChange={(e) => setListSearch(e.target.value)}
+                  placeholder="Filter by Roll Number..."
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-9 pr-4 py-2 text-white placeholder-zinc-700 text-xs focus:outline-none focus:border-emerald-500 transition-all font-mono uppercase"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* 2nd Year Column */}
@@ -531,22 +725,22 @@ export default function AttendancePage() {
                     <UserCheck className="w-4 h-4 text-emerald-500" />
                     <span>2nd Years Checked-In</span>
                   </h3>
-                  <span className="bg-zinc-800/80 text-zinc-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-                    {secondYear.length}
+                  <span className="bg-zinc-800/80 text-zinc-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full font-mono">
+                    {listSearch.trim() ? `${filteredSecondYear.length} found` : secondYear.length}
                   </span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-                  {secondYear.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-[10px] uppercase">
-                      No 2nd years checked in today
+                  {filteredSecondYear.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-zinc-650 font-mono text-[10px] uppercase text-center p-4">
+                      {listSearch.trim() ? 'No matching check-ins found' : 'No 2nd years checked in today'}
                     </div>
                   ) : (
-                    secondYear.map((app) => (
+                    filteredSecondYear.map((app) => (
                       <div key={app.id} className="bg-zinc-900/60 border border-zinc-900 rounded-xl p-3 flex items-center justify-between">
                         <div>
                           <p className="text-xs font-bold text-white">{app.name}</p>
-                          <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">{app.rollNumber} • Sec {app.section}</p>
+                          <p className="text-[10px] font-mono text-zinc-550 uppercase mt-0.5">{app.rollNumber} • Sec {app.section}</p>
                         </div>
                         <span className="text-[9px] font-mono text-zinc-600 flex items-center space-x-1">
                           <Clock size={10} />
@@ -565,22 +759,22 @@ export default function AttendancePage() {
                     <UserCheck className="w-4 h-4 text-emerald-500" />
                     <span>3rd Years Checked-In</span>
                   </h3>
-                  <span className="bg-zinc-800/80 text-zinc-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-                    {thirdYear.length}
+                  <span className="bg-zinc-800/80 text-zinc-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full font-mono">
+                    {listSearch.trim() ? `${filteredThirdYear.length} found` : thirdYear.length}
                   </span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-                  {thirdYear.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-zinc-600 font-mono text-[10px] uppercase">
-                      No 3rd years checked in today
+                  {filteredThirdYear.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-zinc-650 font-mono text-[10px] uppercase text-center p-4">
+                      {listSearch.trim() ? 'No matching check-ins found' : 'No 3rd years checked in today'}
                     </div>
                   ) : (
-                    thirdYear.map((app) => (
+                    filteredThirdYear.map((app) => (
                       <div key={app.id} className="bg-zinc-900/60 border border-zinc-900 rounded-xl p-3 flex items-center justify-between">
                         <div>
                           <p className="text-xs font-bold text-white">{app.name}</p>
-                          <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">{app.rollNumber} • Sec {app.section}</p>
+                          <p className="text-[10px] font-mono text-zinc-550 uppercase mt-0.5">{app.rollNumber} • Sec {app.section}</p>
                         </div>
                         <span className="text-[9px] font-mono text-zinc-600 flex items-center space-x-1">
                           <Clock size={10} />
@@ -601,24 +795,30 @@ export default function AttendancePage() {
                     <AlertTriangle className="w-4 h-4" />
                     <span>Unresolved / Year Mismatch Records</span>
                   </h3>
-                  <span className="bg-red-950/60 text-red-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-red-500/20">
-                    {unknown.length}
+                  <span className="bg-red-950/60 text-red-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-red-500/20 font-mono">
+                    {listSearch.trim() ? `${filteredUnknown.length} found` : unknown.length}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[200px] overflow-y-auto">
-                  {unknown.map((app) => (
-                    <div key={app.id} className="bg-zinc-950 border border-zinc-900 rounded-xl p-3 flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-bold text-zinc-300">{app.name}</p>
-                        <p className="text-[10px] font-mono text-zinc-500 uppercase mt-0.5">
-                          {app.rollNumber} • DB Year: <span className="text-red-400">&quot;{app.rawYear || 'None'}&quot;</span>
-                        </p>
-                      </div>
-                      <span className="text-[9px] font-mono text-zinc-600">
-                        {app.scannedAt ? new Date(app.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
-                      </span>
+                  {filteredUnknown.length === 0 ? (
+                    <div className="col-span-full py-6 text-center text-zinc-650 font-mono text-[10px] uppercase">
+                      No matching records
                     </div>
-                  ))}
+                  ) : (
+                    filteredUnknown.map((app) => (
+                      <div key={app.id} className="bg-zinc-950 border border-zinc-900 rounded-xl p-3 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-zinc-300">{app.name}</p>
+                          <p className="text-[10px] font-mono text-zinc-550 uppercase mt-0.5">
+                            {app.rollNumber} • DB Year: <span className="text-red-400">&quot;{app.rawYear || 'None'}&quot;</span>
+                          </p>
+                        </div>
+                        <span className="text-[9px] font-mono text-zinc-600">
+                          {app.scannedAt ? new Date(app.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
                 <p className="text-[10px] text-zinc-500 font-mono mt-3 leading-relaxed">
                   ⚠️ Note: The records above could not be matched to either &quot;2nd Year&quot; or &quot;3rd Year&quot; lists automatically. They will be excluded from the Excel reports until manually corrected in the candidate database profile page.
