@@ -73,8 +73,28 @@ export default function AdminDashboard() {
 
   const [mobileTab, setMobileTab] = useState<'directory' | 'evaluation'>('directory');
   const [autoSelectFirst, setAutoSelectFirst] = useState(false);
+  const [slotCounts, setSlotCounts] = useState<Record<string, number>>({
+    "13th August - Forenoon Session": 0,
+    "13th August - Afternoon Session": 0,
+    "14th August - Forenoon Session": 0,
+    "14th August - Afternoon Session": 0
+  });
 
   const router = useRouter();
+
+  const fetchSlotCounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/recruitment-status');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.slotCounts) {
+          setSlotCounts(data.slotCounts);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading slot counts:', err);
+    }
+  }, []);
 
   // 1. Authenticate Admin and Fetch List
   const fetchList = useCallback(async () => {
@@ -94,6 +114,9 @@ export default function AdminDashboard() {
       setTotalPages(data.pagination?.totalPages || 1);
       setStats(data.stats || null);
       
+      // Fetch slot counts as well
+      fetchSlotCounts();
+      
       if (autoSelectFirst && list.length > 0) {
         setSelectedId(list[0].id);
         setMobileTab('evaluation');
@@ -105,7 +128,7 @@ export default function AdminDashboard() {
     } finally {
       setLoadingList(false);
     }
-  }, [searchVal, activeFilter, page, router, autoSelectFirst]);
+  }, [searchVal, activeFilter, page, router, autoSelectFirst, fetchSlotCounts]);
 
   useEffect(() => {
     fetchList();
@@ -263,6 +286,51 @@ export default function AdminDashboard() {
             <div className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 flex flex-col justify-center col-span-2 md:col-span-1">
               <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider font-mono">Need Evaluation</span>
               <span className="text-2xl font-black text-amber-500 mt-1">{stats.notRatedCount}</span>
+            </div>
+          </div>
+
+          {/* Slots Availability Tracker */}
+          <div className="max-w-6xl mx-auto mt-6 pt-6 border-t border-zinc-800/40">
+            <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono mb-3">
+              Interview Slot Capacity Tracker (Limit: 50 per slot)
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(slotCounts).map(([slotName, count]) => {
+                const limit = 50;
+                const available = Math.max(0, limit - count);
+                const percent = Math.min(100, (count / limit) * 100);
+                
+                return (
+                  <div key={slotName} className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                    <div>
+                      <span className="text-zinc-500 text-[9px] font-mono font-bold uppercase tracking-wider block truncate">
+                        {slotName.replace('Session', 'Slot')}
+                      </span>
+                      <div className="flex justify-between items-baseline mt-2">
+                        <span className="text-xl font-black text-white">{count} <span className="text-[10px] text-zinc-600 font-bold">/ {limit}</span></span>
+                        <span className={`text-[10px] font-mono font-bold uppercase tracking-wider ${
+                          available === 0 ? 'text-red-400' : 'text-emerald-400'
+                        }`}>
+                          {available === 0 ? 'Full' : `${available} Available`}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Visual Progress Bar */}
+                    <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden mt-3 border border-zinc-800">
+                      <div 
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          percent >= 100 
+                            ? 'bg-red-500 shadow-[0_0_8px_#ef4444]' 
+                            : percent >= 80 
+                            ? 'bg-amber-500' 
+                            : 'bg-emerald-500'
+                        }`} 
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
