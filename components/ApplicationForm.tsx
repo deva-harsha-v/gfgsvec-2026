@@ -77,6 +77,8 @@ export default function ApplicationForm() {
       rollNumber: '',
       year: '' as any,
       section: '',
+      branch: '',
+      cgpa: undefined,
       interestedFields: [],
       hasPastExperience: false,
       pastExperience: '',
@@ -112,7 +114,7 @@ export default function ApplicationForm() {
   const handleNext = async () => {
     let fieldsToValidate: any[] = [];
     if (step === 1) {
-      fieldsToValidate = ['name', 'rollNumber', 'year', 'section'];
+      fieldsToValidate = ['name', 'rollNumber', 'year', 'branch', 'section', 'cgpa'];
     } else if (step === 2) {
       fieldsToValidate = ['interestedFields', 'previousWorkLinks', 'interviewSlot'];
       if (hasPastExp) {
@@ -142,6 +144,8 @@ export default function ApplicationForm() {
       formData.append('rollNumber', data.rollNumber);
       formData.append('year', data.year);
       formData.append('section', data.section);
+      if (data.branch) formData.append('branch', data.branch);
+      if (data.cgpa !== undefined && data.cgpa !== null && data.cgpa !== '') formData.append('cgpa', String(data.cgpa));
       formData.append('interestedFields', JSON.stringify(data.interestedFields));
       formData.append('hasPastExperience', String(data.hasPastExperience));
       formData.append('pastExperience', data.pastExperience || '');
@@ -274,6 +278,20 @@ export default function ApplicationForm() {
               </div>
 
               <div className="flex flex-col space-y-2">
+                <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider" htmlFor="branch">Branch</label>
+                <input
+                  id="branch"
+                  type="text"
+                  placeholder="e.g. CSE, ECE, AI&DS"
+                  {...register('branch')}
+                  className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium uppercase"
+                />
+                {errors.branch && <span className="text-red-500 text-xs font-medium mt-1">{errors.branch.message}</span>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col space-y-2">
                 <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider" htmlFor="section">Section *</label>
                 <input
                   id="section"
@@ -283,6 +301,21 @@ export default function ApplicationForm() {
                   className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
                 />
                 {errors.section && <span className="text-red-500 text-xs font-medium mt-1">{errors.section.message}</span>}
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider" htmlFor="cgpa">CGPA (0 - 10)</label>
+                <input
+                  id="cgpa"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="10"
+                  placeholder="e.g. 8.5"
+                  {...register('cgpa')}
+                  className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium"
+                />
+                {errors.cgpa && <span className="text-red-500 text-xs font-medium mt-1">{errors.cgpa.message as string}</span>}
               </div>
             </div>
           </div>

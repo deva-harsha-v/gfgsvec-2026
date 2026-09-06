@@ -13,6 +13,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const search = (searchParams.get('search') || '').toUpperCase().trim();
     const filter = searchParams.get('filter') || 'All'; // All, NotPresented, Presented, Rated, NotRated
+    const status = searchParams.get('status') || 'All';
+    const domain = searchParams.get('domain') || 'All';
+    const year = searchParams.get('year') || 'All';
+    const branch = searchParams.get('branch') || 'All';
+    
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '15', 10);
     const skip = (page - 1) * limit;
@@ -20,15 +25,20 @@ export async function GET(req: NextRequest) {
     // 2. Build Where Conditions
     const where: any = {};
 
-    // Enforce Roll Number search ONLY
+    // Search by Roll Number or Name
     if (search) {
-      where.rollNumber = {
-        contains: search,
-        mode: 'insensitive',
-      };
+      where.OR = [
+        { rollNumber: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    // Apply Quick Filters
+    // Apply Status Filter
+    if (status !== 'All') {
+      where.applicationStatus = status;
+    }
+
+    // Apply Quick Filters (legacy support)
     if (filter === 'NotPresented') {
       where.interviewPresented = false;
     } else if (filter === 'Presented') {
@@ -43,6 +53,26 @@ export async function GET(req: NextRequest) {
       where.interviewPresented = true;
       where.interviewTechnicalRating = null;
       where.interviewNonTechnicalRating = null;
+    }
+
+    // Apply Domain Filter
+    if (domain !== 'All') {
+      where.interestedFields = {
+        has: domain,
+      };
+    }
+
+    // Apply Year Filter
+    if (year !== 'All') {
+      where.year = year;
+    }
+
+    // Apply Branch Filter
+    if (branch !== 'All') {
+      where.branch = {
+        equals: branch,
+        mode: 'insensitive',
+      };
     }
 
     // 3. Query Database

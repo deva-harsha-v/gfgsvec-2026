@@ -47,7 +47,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: `Validation error: ${errorMsg}` }, { status: 400 });
     }
 
-    const { interviewPresented, interviewTechnicalRating, interviewNonTechnicalRating, interviewNotes, applicationStatus } = validation.data;
+    const { 
+      interviewPresented, 
+      interviewTechnicalRating, 
+      interviewNonTechnicalRating, 
+      ratingCommunication,
+      ratingTechnicalSkills,
+      ratingProblemSolving,
+      ratingTeamFit,
+      ratingConfidence,
+      ratingGrowthMindset,
+      ratingLeadership,
+      suitableForTechnical,
+      suitableForNonTechnical,
+      interviewNotes, 
+      applicationStatus 
+    } = validation.data;
 
     // 3. Strict Rating/Presented Constraint Logic
     let techRatingToSave: number | null = null;
@@ -74,6 +89,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         interviewPresented,
         interviewTechnicalRating: techRatingToSave,
         interviewNonTechnicalRating: nonTechRatingToSave,
+        ratingCommunication: interviewPresented ? ratingCommunication : null,
+        ratingTechnicalSkills: interviewPresented ? ratingTechnicalSkills : null,
+        ratingProblemSolving: interviewPresented ? ratingProblemSolving : null,
+        ratingTeamFit: interviewPresented ? ratingTeamFit : null,
+        ratingConfidence: interviewPresented ? ratingConfidence : null,
+        ratingGrowthMindset: interviewPresented ? ratingGrowthMindset : null,
+        ratingLeadership: interviewPresented ? ratingLeadership : null,
+        suitableForTechnical,
+        suitableForNonTechnical,
         interviewNotes,
         applicationStatus,
       },

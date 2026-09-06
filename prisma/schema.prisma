@@ -7,30 +7,48 @@ generator client {
 }
 
 model Applicant {
-  id                 String            @id @default(cuid())
-  applicationId      String            @unique // Non-enumerable: GFG-SVEC-2026-XXXX
-  name               String
-  rollNumber         String            @unique // Duplicate prevention
-  year               String
-  section            String
-  interestedFields   String[]          // e.g. ["Web Development", "Design"]
-  hasPastExperience  Boolean
-  pastExperience     String?
-  previousWorkLinks  String[]          // Portfolio/social links
-  reasonForJoining   String
-  contribution       String
-  clubKnowledge      String
-  resumePath         String?           // Local path to private uploaded PDF
-  interviewPresented Boolean           @default(false)
+  id                          String            @id @default(cuid())
+  applicationId               String            @unique // Non-enumerable: GFG-SVEC-2026-XXXX
+  name                        String
+  rollNumber                  String            @unique // Duplicate prevention
+  year                        String
+  section                     String
+  branch                      String?           // E.g. "CSE", "ECE", "EEE", "AIDS"
+  cgpa                        Float?            // Academic CGPA (e.g., 8.5)
+  interestedFields            String[]          // e.g. ["Web Development", "Design"]
+  hasPastExperience           Boolean
+  pastExperience              String?
+  previousWorkLinks           String[]          // Portfolio/social links
+  reasonForJoining            String
+  contribution                String
+  clubKnowledge               String
+  resumePath                  String?           // Local path to private uploaded PDF
+  interviewPresented          Boolean           @default(false)
+  
+  // Legacy rating fields (kept for backward compatibility)
   interviewTechnicalRating    Int?              // Technical rating (1 to 5)
   interviewNonTechnicalRating Int?              // Non-technical rating (1 to 5)
-  interviewNotes     String?
-  attendanceScannedAt DateTime?         // Timestamp of QR check-in
-  interviewSlot      String?           // Selected interview availability slot
-  applicationStatus  ApplicationStatus @default(NEW)
-  submittedAt        DateTime          @default(now())
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  
+  // Extended 7-Criteria Rubric Ratings (1 to 5 stars)
+  ratingCommunication         Int?
+  ratingTechnicalSkills       Int?
+  ratingProblemSolving        Int?
+  ratingTeamFit               Int?
+  ratingConfidence            Int?
+  ratingGrowthMindset         Int?
+  ratingLeadership            Int?
+
+  // Role Suitability Ratings
+  suitableForTechnical        SuitabilityStatus?
+  suitableForNonTechnical     SuitabilityStatus?
+
+  interviewNotes              String?
+  attendanceScannedAt         DateTime?         // Timestamp of QR check-in
+  interviewSlot               String?           // Selected interview availability slot
+  applicationStatus           ApplicationStatus @default(NEW)
+  submittedAt                 DateTime          @default(now())
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
 }
 
 enum ApplicationStatus {
@@ -39,6 +57,12 @@ enum ApplicationStatus {
   INTERVIEWED
   SELECTED
   REJECTED
+}
+
+enum SuitabilityStatus {
+  YES
+  NO
+  UNDECIDED
 }
 
 model Admin {

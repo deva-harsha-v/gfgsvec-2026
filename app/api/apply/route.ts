@@ -45,6 +45,9 @@ export async function POST(req: NextRequest) {
     const rollNumber = (formData.get('rollNumber') as string || '').toUpperCase().trim();
     const year = formData.get('year') as string;
     const section = formData.get('section') as string;
+    const branch = (formData.get('branch') as string || '').trim().toUpperCase() || null;
+    const rawCgpa = formData.get('cgpa');
+    const cgpa = rawCgpa !== null && rawCgpa !== undefined && rawCgpa !== '' ? parseFloat(rawCgpa as string) : null;
     
     let interestedFields: string[] = [];
     try {
@@ -75,6 +78,8 @@ export async function POST(req: NextRequest) {
       rollNumber,
       year,
       section,
+      branch,
+      cgpa,
       interestedFields,
       hasPastExperience,
       pastExperience,
@@ -152,6 +157,8 @@ export async function POST(req: NextRequest) {
             rollNumber,
             year,
             section,
+            branch,
+            cgpa,
             interestedFields,
             hasPastExperience,
             pastExperience,
