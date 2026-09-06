@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AdminSidebar from '@/components/AdminSidebar';
@@ -45,7 +45,7 @@ interface Stats {
   rejectedCount: number;
 }
 
-export default function AdminApplicationsPage() {
+function AdminApplicationsContent() {
   const searchParams = useSearchParams();
   const initialTab = searchParams ? searchParams.get('tab') : null;
 
@@ -479,6 +479,18 @@ export default function AdminApplicationsPage() {
 
       </main>
     </div>
+  );
+}
+
+export default function AdminApplicationsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0c10] flex items-center justify-center space-y-3">
+        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+      </div>
+    }>
+      <AdminApplicationsContent />
+    </Suspense>
   );
 }
 
