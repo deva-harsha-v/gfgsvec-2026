@@ -6,30 +6,84 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model RecruitmentCycle {
+  id               String                 @id @default(cuid())
+  title            String                 // e.g. "GFG SVEC Executive Board 2026"
+  slug             String                 @unique // e.g. "gfg-svec-2026"
+  posterImageUrl   String?                // Supabase Storage URL
+  shortDescription String                 // Concise intro for homepage CTA
+  fullDescription  String                 // Full details & instructions
+  status           RecruitmentCycleStatus @default(DRAFT)
+  opensAt          DateTime
+  closesAt         DateTime
+  formFields       FormField[]            // Ordered custom application questions
+  applicants       Applicant[]            // Candidates applied under this cycle
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+}
+
+enum RecruitmentCycleStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+model FormField {
+  id          String           @id @default(cuid())
+  cycleId     String
+  cycle       RecruitmentCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  label       String           // Question prompt
+  fieldKey    String           // JSON response key
+  fieldType   FieldType
+  options     String[]         // Select options
+  required    Boolean          @default(true)
+  order       Int              // Display ordering index
+  createdAt   DateTime         @default(now())
+
+  @@unique([cycleId, fieldKey])
+}
+
+enum FieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  SINGLE_SELECT
+  MULTI_SELECT
+  CHECKBOX
+  FILE_UPLOAD
+  RATING
+}
+
 model Applicant {
   id                          String            @id @default(cuid())
   applicationId               String            @unique // Non-enumerable: GFG-SVEC-2026-XXXX
+  cycleId                     String?           // Foreign key referencing RecruitmentCycle
+  cycle                       RecruitmentCycle? @relation(fields: [cycleId], references: [id])
+  responses                   Json?             // Answers to dynamic FormFields: { [fieldKey]: value }
+
   name                        String
   rollNumber                  String            @unique // Duplicate prevention
   year                        String
   section                     String
   branch                      String?           // E.g. "CSE", "ECE", "EEE", "AIDS"
   cgpa                        Float?            // Academic CGPA (e.g., 8.5)
+  
+  // Existing Hardcoded Fields (preserved for historical data compatibility)
   interestedFields            String[]          // e.g. ["Web Development", "Design"]
-  hasPastExperience           Boolean
+  hasPastExperience           Boolean           @default(false)
   pastExperience              String?
   previousWorkLinks           String[]          // Portfolio/social links
-  reasonForJoining            String
-  contribution                String
-  clubKnowledge               String
-  resumePath                  String?           // Local path to private uploaded PDF
+  reasonForJoining            String?           @default("")
+  contribution                String?           @default("")
+  clubKnowledge               String?           @default("")
+  resumePath                  String?           // Path to uploaded PDF
+  interviewSlot               String?           // Selected interview availability slot
+
   interviewPresented          Boolean           @default(false)
   
-  // Legacy rating fields (kept for backward compatibility)
-  interviewTechnicalRating    Int?              // Technical rating (1 to 5)
-  interviewNonTechnicalRating Int?              // Non-technical rating (1 to 5)
-  
-  // Extended 7-Criteria Rubric Ratings (1 to 5 stars)
+  // Rating fields
+  interviewTechnicalRating    Int?
+  interviewNonTechnicalRating Int?
   ratingCommunication         Int?
   ratingTechnicalSkills       Int?
   ratingProblemSolving        Int?
@@ -38,13 +92,11 @@ model Applicant {
   ratingGrowthMindset         Int?
   ratingLeadership            Int?
 
-  // Role Suitability Ratings
   suitableForTechnical        SuitabilityStatus?
   suitableForNonTechnical     SuitabilityStatus?
 
   interviewNotes              String?
   attendanceScannedAt         DateTime?         // Timestamp of QR check-in
-  interviewSlot               String?           // Selected interview availability slot
   applicationStatus           ApplicationStatus @default(NEW)
   submittedAt                 DateTime          @default(now())
   createdAt                   DateTime          @default(now())

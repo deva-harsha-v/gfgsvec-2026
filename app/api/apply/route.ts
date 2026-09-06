@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { ApplicantSchema } from '@/lib/schemas';
+import { buildDynamicValidationSchema, DynamicFormField } from '@/lib/dynamic-validation';
 import { promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-const START_UTC_TIME = '2026-08-12T13:30:00.000Z'; // 7:00 PM IST (Asia/Kolkata)
-const CLOSE_UTC_TIME = '2026-08-12T16:30:00.000Z'; // 10:00 PM IST (Asia/Kolkata)
 const STORAGE_DIR = process.env.VERCEL
   ? path.join('/tmp', 'resumes')
   : path.join(process.cwd(), 'storage', 'resumes');
@@ -14,25 +12,42 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Time Check (with dev/admin bypass)
     const { searchParams } = new URL(req.url);
     const bypass = searchParams.get('bypass');
     const isBypassed = bypass === 'adminTest';
-    const now = new Date();
-    const start = new Date(START_UTC_TIME);
-    const close = new Date(CLOSE_UTC_TIME);
     const isDev = process.env.NODE_ENV === 'development';
+    const now = new Date();
+
+    // 1. Fetch Currently Published Recruitment Cycle
+    const activeCycle = await db.recruitmentCycle.findFirst({
+      where: { status: 'PUBLISHED' },
+      include: {
+        formFields: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!activeCycle) {
+      return NextResponse.json(
+        { error: 'No recruitment cycle is currently active.' },
+        { status: 403 }
+      );
+    }
+
+    const start = new Date(activeCycle.opensAt);
+    const close = new Date(activeCycle.closesAt);
 
     if (!isDev && !isBypassed) {
       if (now.getTime() < start.getTime()) {
         return NextResponse.json(
-          { error: 'Applications are not open yet.' },
+          { error: `Applications for "${activeCycle.title}" are not open yet.` },
           { status: 403 }
         );
       }
       if (now.getTime() >= close.getTime()) {
         return NextResponse.json(
-          { error: 'Applications are now closed.' },
+          { error: `Applications for "${activeCycle.title}" are now closed.` },
           { status: 403 }
         );
       }
@@ -40,62 +55,94 @@ export async function POST(req: NextRequest) {
 
     // 2. Parse Form Data
     const formData = await req.formData();
-    
-    const name = formData.get('name') as string;
+
+    const name = (formData.get('name') as string || '').trim();
     const rollNumber = (formData.get('rollNumber') as string || '').toUpperCase().trim();
-    const year = formData.get('year') as string;
-    const section = formData.get('section') as string;
+    const year = (formData.get('year') as string || '').trim();
+    const section = (formData.get('section') as string || '').trim();
     const branch = (formData.get('branch') as string || '').trim().toUpperCase() || null;
     const rawCgpa = formData.get('cgpa');
     const cgpa = rawCgpa !== null && rawCgpa !== undefined && rawCgpa !== '' ? parseFloat(rawCgpa as string) : null;
-    
-    let interestedFields: string[] = [];
-    try {
-      interestedFields = JSON.parse(formData.get('interestedFields') as string || '[]');
-    } catch {
-      return NextResponse.json({ error: 'Invalid format for interested fields.' }, { status: 400 });
-    }
-
-    const hasPastExperience = formData.get('hasPastExperience') === 'true';
-    const pastExperience = formData.get('pastExperience') as string || null;
-    
-    let previousWorkLinks: string[] = [];
-    try {
-      previousWorkLinks = JSON.parse(formData.get('previousWorkLinks') as string || '[]');
-    } catch {
-      return NextResponse.json({ error: 'Invalid format for portfolio links.' }, { status: 400 });
-    }
-
-    const reasonForJoining = formData.get('reasonForJoining') as string;
-    const contribution = formData.get('contribution') as string;
-    const clubKnowledge = formData.get('clubKnowledge') as string;
-    const interviewSlot = formData.get('interviewSlot') as string || '';
     const resumeFile = formData.get('resume') as File | null;
 
-    // 3. Schema Validation
-    const validationResult = ApplicantSchema.safeParse({
+    // 3. Build Dynamic Validation Payload & Process Dynamic Answers
+    const dynamicFields: DynamicFormField[] = activeCycle.formFields.map((f) => ({
+      id: f.id,
+      fieldKey: f.fieldKey,
+      label: f.label,
+      fieldType: f.fieldType as any,
+      options: f.options,
+      required: f.required,
+      order: f.order,
+    }));
+
+    const responsesMap: Record<string, any> = {};
+    const validationPayload: Record<string, any> = {
       name,
       rollNumber,
       year,
       section,
       branch,
       cgpa,
-      interestedFields,
-      hasPastExperience,
-      pastExperience,
-      previousWorkLinks,
-      interviewSlot,
-      reasonForJoining,
-      contribution,
-      clubKnowledge,
-    });
+    };
+
+    // Ensure storage directory exists
+    await fs.mkdir(STORAGE_DIR, { recursive: true });
+
+    for (const field of dynamicFields) {
+      const rawVal = formData.get(field.fieldKey);
+
+      if (field.fieldType === 'MULTI_SELECT') {
+        try {
+          const parsed = JSON.parse((rawVal as string) || '[]');
+          responsesMap[field.fieldKey] = parsed;
+          validationPayload[field.fieldKey] = parsed;
+        } catch {
+          responsesMap[field.fieldKey] = [];
+          validationPayload[field.fieldKey] = [];
+        }
+      } else if (field.fieldType === 'CHECKBOX') {
+        const boolVal = rawVal === 'true' || rawVal === 'on';
+        responsesMap[field.fieldKey] = boolVal;
+        validationPayload[field.fieldKey] = boolVal;
+      } else if (field.fieldType === 'FILE_UPLOAD') {
+        const uploadedFile = rawVal as File | null;
+        if (uploadedFile && uploadedFile instanceof File && uploadedFile.size > 0) {
+          if (uploadedFile.size > MAX_FILE_SIZE) {
+            return NextResponse.json(
+              { error: `File for "${field.label}" must not exceed 10MB.` },
+              { status: 400 }
+            );
+          }
+          const fileExt = path.extname(uploadedFile.name) || '.pdf';
+          const savedFileName = `${crypto.randomUUID()}_${rollNumber}_${field.fieldKey}${fileExt}`;
+          const savedPath = path.join(STORAGE_DIR, savedFileName);
+          const buffer = Buffer.from(await uploadedFile.arrayBuffer());
+          await fs.writeFile(savedPath, buffer);
+
+          responsesMap[field.fieldKey] = savedFileName;
+          validationPayload[field.fieldKey] = savedFileName;
+        } else {
+          responsesMap[field.fieldKey] = null;
+          validationPayload[field.fieldKey] = null;
+        }
+      } else {
+        const strVal = rawVal !== null ? (rawVal as string) : '';
+        responsesMap[field.fieldKey] = strVal;
+        validationPayload[field.fieldKey] = strVal;
+      }
+    }
+
+    // 4. Validate against Dynamic Zod Schema
+    const dynamicSchema = buildDynamicValidationSchema(dynamicFields);
+    const validationResult = dynamicSchema.safeParse(validationPayload);
 
     if (!validationResult.success) {
-      const errorMsg = validationResult.error.issues.map(e => e.message).join(', ');
+      const errorMsg = validationResult.error.issues.map((e) => e.message).join(', ');
       return NextResponse.json({ error: `Validation error: ${errorMsg}` }, { status: 400 });
     }
 
-    // 4. Duplicate Check
+    // 5. Duplicate Roll Number Check
     const existingApplicant = await db.applicant.findUnique({
       where: { rollNumber },
     });
@@ -107,72 +154,69 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Handle File Upload (Compulsory PDF)
+    // 6. Handle Primary Resume Upload (compulsory PDF)
     if (!resumeFile || resumeFile.size === 0) {
       return NextResponse.json({ error: 'Resume PDF upload is required.' }, { status: 400 });
     }
 
-    // Validate PDF type
     if (resumeFile.type !== 'application/pdf') {
       return NextResponse.json({ error: 'Resume must be a PDF file.' }, { status: 400 });
     }
 
-    // Validate File Size
     if (resumeFile.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: 'Resume file size must not exceed 10MB.' }, { status: 400 });
     }
 
-    // Create storage directory if it doesn't exist
-    await fs.mkdir(STORAGE_DIR, { recursive: true });
+    const resumeFileName = `${crypto.randomUUID()}_${rollNumber}.pdf`;
+    const resumeFilePath = path.join(STORAGE_DIR, resumeFileName);
+    const resumeBuffer = Buffer.from(await resumeFile.arrayBuffer());
+    await fs.writeFile(resumeFilePath, resumeBuffer);
 
-    // Save file securely
-    const fileName = `${crypto.randomUUID()}_${rollNumber}.pdf`;
-    const filePath = path.join(STORAGE_DIR, fileName);
-    const fileBuffer = Buffer.from(await resumeFile.arrayBuffer());
-    await fs.writeFile(filePath, fileBuffer);
-    const resumePath = fileName;
-
-    // 6. Generate secure, non-sequential and non-enumerable Application ID
-    const randomSuffix = crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 characters
+    // 7. Generate Application ID and create Applicant record inside transaction
+    const randomSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
     const applicationId = `GFG-SVEC-2026-${randomSuffix}`;
+    const interviewSlot = responsesMap['interviewSlot'] || '';
 
-    // Insert applicant in a transaction with Serializable isolation level to guarantee slot limit is strictly obeyed under high concurrency
     try {
-      const result = await db.$transaction(async (tx) => {
-        // A. Verify the interview slot is not full (limit 50)
-        if (interviewSlot) {
-          const slotCount = await tx.applicant.count({
-            where: { interviewSlot }
-          });
-          if (slotCount >= 50) {
-            throw new Error('SLOT_FULL');
+      const result = await db.$transaction(
+        async (tx) => {
+          if (interviewSlot) {
+            const slotCount = await tx.applicant.count({
+              where: {
+                cycleId: activeCycle.id,
+                interviewSlot,
+              },
+            });
+            if (slotCount >= 50) {
+              throw new Error('SLOT_FULL');
+            }
           }
-        }
 
-        // B. Create candidate record
-        return await tx.applicant.create({
-          data: {
-            applicationId,
-            name,
-            rollNumber,
-            year,
-            section,
-            branch,
-            cgpa,
-            interestedFields,
-            hasPastExperience,
-            pastExperience,
-            previousWorkLinks,
-            interviewSlot,
-            reasonForJoining,
-            contribution,
-            clubKnowledge,
-            resumePath,
-          },
-        });
-      }, {
-        isolationLevel: 'Serializable'
-      });
+          return await tx.applicant.create({
+            data: {
+              applicationId,
+              cycleId: activeCycle.id,
+              responses: responsesMap,
+              name,
+              rollNumber,
+              year,
+              section,
+              branch,
+              cgpa,
+              resumePath: resumeFileName,
+              interviewSlot: interviewSlot || null,
+              interestedFields: Array.isArray(responsesMap['interestedFields']) ? responsesMap['interestedFields'] : [],
+              hasPastExperience: Boolean(responsesMap['hasPastExperience']),
+              pastExperience: typeof responsesMap['pastExperience'] === 'string' ? responsesMap['pastExperience'] : null,
+              previousWorkLinks: Array.isArray(responsesMap['previousWorkLinks']) ? responsesMap['previousWorkLinks'] : [],
+              reasonForJoining: typeof responsesMap['reasonForJoining'] === 'string' ? responsesMap['reasonForJoining'] : '',
+              contribution: typeof responsesMap['contribution'] === 'string' ? responsesMap['contribution'] : '',
+              clubKnowledge: typeof responsesMap['clubKnowledge'] === 'string' ? responsesMap['clubKnowledge'] : '',
+            },
+          });
+        },
+        { isolationLevel: 'Serializable' }
+      );
 
       return NextResponse.json({
         success: true,
@@ -195,3 +239,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const dynamic = 'force-dynamic';

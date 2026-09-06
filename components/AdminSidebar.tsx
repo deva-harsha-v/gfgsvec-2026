@@ -6,6 +6,8 @@ import {
   LayoutDashboard, 
   Users, 
   CalendarClock, 
+  Calendar,
+  QrCode,
   Settings, 
   LogOut, 
   ShieldCheck, 
@@ -40,6 +42,12 @@ export default function AdminSidebar({ currentTab }: AdminSidebarProps) {
       active: pathname === '/admin',
     },
     {
+      name: 'Events & Drives',
+      href: '/admin/events',
+      icon: Calendar,
+      active: pathname.startsWith('/admin/events'),
+    },
+    {
       name: 'Applicants List',
       href: '/admin/gfg-hiring',
       icon: Users,
@@ -50,6 +58,12 @@ export default function AdminSidebar({ currentTab }: AdminSidebarProps) {
       href: '/admin/gfg-hiring?tab=slots',
       icon: CalendarClock,
       active: pathname === '/admin/gfg-hiring' && currentTab === 'slots',
+    },
+    {
+      name: 'Attendance Tracker',
+      href: '/admin/attendance',
+      icon: QrCode,
+      active: pathname === '/admin/attendance',
     },
     {
       name: 'Security & System',

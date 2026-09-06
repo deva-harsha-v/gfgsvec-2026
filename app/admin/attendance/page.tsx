@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminNavbar from '@/components/AdminNavbar';
+import AdminSidebar from '@/components/AdminSidebar';
 import { 
   QrCode, 
   Search, 
@@ -389,10 +389,9 @@ export default function AttendancePage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans">
-      <AdminNavbar />
-
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 md:px-8 flex flex-col space-y-8">
+    <div className="min-h-screen bg-[#0a0c10] text-zinc-100 flex font-sans">
+      <AdminSidebar />
+      <main className="flex-1 p-8 overflow-y-auto space-y-8 max-w-7xl mx-auto">
         
         {/* Critical Reminder Alert */}
         <div className="bg-amber-950/20 border border-amber-500/20 rounded-2xl p-4 flex items-center space-x-3 text-amber-400">
@@ -828,7 +827,7 @@ export default function AttendancePage() {
             
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

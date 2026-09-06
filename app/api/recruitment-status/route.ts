@@ -1,21 +1,37 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-const START_UTC_TIME = '2026-08-12T13:30:00.000Z'; // 7:00 PM IST (Asia/Kolkata)
-const CLOSE_UTC_TIME = '2026-08-12T16:30:00.000Z'; // 10:00 PM IST (Asia/Kolkata)
-
 export async function GET() {
   const now = new Date();
-  const start = new Date(START_UTC_TIME);
-  const close = new Date(CLOSE_UTC_TIME);
-
   const isDev = process.env.NODE_ENV === 'development';
+
+  // Fetch the currently published recruitment cycle
+  const activeCycle = await db.recruitmentCycle.findFirst({
+    where: { status: 'PUBLISHED' },
+    include: {
+      formFields: {
+        orderBy: { order: 'asc' },
+      },
+    },
+  });
+
+  if (!activeCycle) {
+    return NextResponse.json({
+      hasActiveCycle: false,
+      isOpen: false,
+      isClosed: false,
+      message: 'No recruitment cycle is currently active.',
+      serverTime: now.toISOString(),
+    });
+  }
+
+  const start = new Date(activeCycle.opensAt);
+  const close = new Date(activeCycle.closesAt);
 
   let isOpen = false;
   let isClosed = false;
 
   if (isDev) {
-    // In local development, recruitment is always active for testing
     isOpen = true;
     isClosed = false;
   } else {
@@ -23,41 +39,37 @@ export async function GET() {
     isClosed = now.getTime() >= close.getTime();
   }
 
-  // Fetch slot counts dynamically
-  const slots = [
-    "13th August - Forenoon Session",
-    "13th August - Afternoon Session",
-    "14th August - Forenoon Session",
-    "14th August - Afternoon Session"
-  ];
-  
+  // Calculate slot counts for candidates under this active cycle
   const slotCountsMap: Record<string, number> = {};
-  slots.forEach(s => { slotCountsMap[s] = 0; });
 
   try {
     const counts = await db.applicant.groupBy({
       by: ['interviewSlot'],
+      where: { cycleId: activeCycle.id },
       _count: {
-        interviewSlot: true
-      }
+        interviewSlot: true,
+      },
     });
 
-    counts.forEach(c => {
-      if (c.interviewSlot && c.interviewSlot in slotCountsMap) {
+    counts.forEach((c) => {
+      if (c.interviewSlot) {
         slotCountsMap[c.interviewSlot] = c._count.interviewSlot;
       }
     });
   } catch (error) {
-    console.error('Error fetching slot counts:', error);
+    console.error('Error fetching slot counts for active cycle:', error);
   }
 
   return NextResponse.json({
+    hasActiveCycle: true,
+    cycle: activeCycle,
     isOpen,
     isClosed,
     serverTime: now.toISOString(),
-    startTime: START_UTC_TIME,
-    closeTime: CLOSE_UTC_TIME,
+    startTime: activeCycle.opensAt.toISOString(),
+    closeTime: activeCycle.closesAt.toISOString(),
     slotCounts: slotCountsMap,
   });
 }
+
 export const dynamic = 'force-dynamic';

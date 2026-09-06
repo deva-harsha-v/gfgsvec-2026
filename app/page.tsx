@@ -17,13 +17,25 @@ export default function GfgHomePage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeCycle, setActiveCycle] = useState<{
+    title: string;
+    shortDescription: string;
+    posterImageUrl: string | null;
+  } | null>(null);
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/recruitment-status')
       .then((res) => res.json())
       .then((data) => {
-        setTargetTime(data.startTime);
+        if (data.cycle) {
+          setActiveCycle({
+            title: data.cycle.title,
+            shortDescription: data.cycle.shortDescription,
+            posterImageUrl: data.cycle.posterImageUrl,
+          });
+        }
+        if (data.startTime) setTargetTime(data.startTime);
         setIsOpen(data.isOpen);
         setIsClosed(data.isClosed);
         setLoading(false);
@@ -131,10 +143,10 @@ export default function GfgHomePage() {
           {/* Structural Boxed Highlight & Subhead */}
           <div className="space-y-4 max-w-2xl mx-auto">
             <div className="inline-block border border-[#00b964]/40 px-4 py-1.5 rounded-2xl bg-[#00b964]/5 font-mono text-xs text-[#00b964] font-bold uppercase tracking-wider">
-              GFG SVEC EXECUTIVE BOARD 2026
+              {activeCycle ? activeCycle.title : 'GFG SVEC EXECUTIVE BOARD 2026'}
             </div>
             <p className="text-[#94a3b8] text-sm md:text-base font-body font-normal leading-relaxed">
-              Step into the official GeeksforGeeks Student Chapter at Sri Vasavi Engineering College. An elite community of software developers, competitive programmers, and creative leaders.
+              {activeCycle ? activeCycle.shortDescription : 'Step into the official GeeksforGeeks Student Chapter at Sri Vasavi Engineering College. An elite community of software developers, competitive programmers, and creative leaders.'}
             </p>
           </div>
 
