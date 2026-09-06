@@ -11,22 +11,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    const { name, rollNumber, year, section, interviewSlot } = await req.json();
+    const { name, rollNumber, year, section, interviewSlot, cycleId } = await req.json();
 
     if (!name || !rollNumber || !year || !section || !interviewSlot) {
       return NextResponse.json({ error: 'All fields (Name, Roll Number, Year, Section, Slot) are required.' }, { status: 400 });
     }
 
+    let targetCycleId = cycleId;
+    if (!targetCycleId) {
+      const activeCycle = await db.recruitmentCycle.findFirst({
+        where: { status: 'PUBLISHED' },
+      });
+      if (activeCycle) {
+        targetCycleId = activeCycle.id;
+      }
+    }
+
+    if (!targetCycleId) {
+      return NextResponse.json({ error: 'No active recruitment cycle found for spot registration.' }, { status: 400 });
+    }
+
     const normalizedRoll = normalizeRollNumber(rollNumber);
 
-    // 2. Check if applicant already exists
+    // 2. Check if applicant already exists in this cycle
     const existing = await db.applicant.findUnique({
-      where: { rollNumber: normalizedRoll },
+      where: {
+        cycleId_rollNumber: {
+          cycleId: targetCycleId,
+          rollNumber: normalizedRoll,
+        },
+      },
     });
 
     if (existing) {
       return NextResponse.json(
-        { error: `Roll number ${normalizedRoll} is already registered.` },
+        { error: `Roll number ${normalizedRoll} is already registered for this event.` },
         { status: 409 }
       );
     }
@@ -55,6 +74,7 @@ export async function POST(req: NextRequest) {
     const applicant = await db.applicant.create({
       data: {
         applicationId: newApplicationId,
+        cycleId: targetCycleId,
         name: name.trim(),
         rollNumber: normalizedRoll,
         year,

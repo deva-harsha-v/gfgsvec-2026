@@ -62,7 +62,7 @@ model Applicant {
   responses                   Json?             // Answers to dynamic FormFields: { [fieldKey]: value }
 
   name                        String
-  rollNumber                  String            @unique // Duplicate prevention
+  rollNumber                  String
   year                        String
   section                     String
   branch                      String?           // E.g. "CSE", "ECE", "EEE", "AIDS"
@@ -101,6 +101,8 @@ model Applicant {
   submittedAt                 DateTime          @default(now())
   createdAt                   DateTime          @default(now())
   updatedAt                   DateTime          @updatedAt
+
+  @@unique([cycleId, rollNumber])
 }
 
 enum ApplicationStatus {

@@ -278,14 +278,22 @@ export default function ApplicationForm() {
               </div>
 
               <div className="flex flex-col space-y-2">
-                <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider" htmlFor="branch">Branch</label>
-                <input
+                <label className="text-zinc-400 text-xs font-bold uppercase tracking-wider" htmlFor="branch">Branch *</label>
+                <select
                   id="branch"
-                  type="text"
-                  placeholder="e.g. CSE, ECE, AI&DS"
                   {...register('branch')}
                   className="bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white placeholder-zinc-700 text-sm focus:outline-none focus:border-emerald-500 transition-all font-medium uppercase"
-                />
+                >
+                  <option value="">Select Branch</option>
+                  <option value="CSE">CSE (Computer Science & Engg)</option>
+                  <option value="ECE">ECE (Electronics & Comm)</option>
+                  <option value="EEE">EEE (Electrical & Electronics)</option>
+                  <option value="AIDS">AIDS (AI & Data Science)</option>
+                  <option value="IT">IT (Information Tech)</option>
+                  <option value="MECH">MECH (Mechanical Engg)</option>
+                  <option value="CIVIL">CIVIL (Civil Engg)</option>
+                  <option value="OTHER">OTHER</option>
+                </select>
                 {errors.branch && <span className="text-red-500 text-xs font-medium mt-1">{errors.branch.message}</span>}
               </div>
             </div>

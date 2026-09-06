@@ -142,14 +142,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Validation error: ${errorMsg}` }, { status: 400 });
     }
 
-    // 5. Duplicate Roll Number Check
+    // 5. Duplicate Roll Number Check (scoped per recruitment cycle)
     const existingApplicant = await db.applicant.findUnique({
-      where: { rollNumber },
+      where: {
+        cycleId_rollNumber: {
+          cycleId: activeCycle.id,
+          rollNumber,
+        },
+      },
     });
 
     if (existingApplicant) {
       return NextResponse.json(
-        { error: 'An application has already been submitted using this roll number.' },
+        { error: 'An application has already been submitted using this roll number for this event.' },
         { status: 409 }
       );
     }

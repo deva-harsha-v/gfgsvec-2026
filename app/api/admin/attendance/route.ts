@@ -11,20 +11,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    const { rollNumber, session } = await req.json();
+    const { rollNumber, session, cycleId } = await req.json();
     if (!rollNumber) {
       return NextResponse.json({ error: 'Roll number is required.' }, { status: 400 });
     }
 
+    let targetCycleId = cycleId;
+    if (!targetCycleId) {
+      const activeCycle = await db.recruitmentCycle.findFirst({
+        where: { status: 'PUBLISHED' },
+      });
+      if (activeCycle) {
+        targetCycleId = activeCycle.id;
+      }
+    }
+
+    if (!targetCycleId) {
+      return NextResponse.json({ error: 'No active recruitment cycle found for check-in.' }, { status: 400 });
+    }
+
     const normalizedRoll = normalizeRollNumber(rollNumber);
 
-    // 1.5 Fetch candidate profile first to verify registration slot
+    // 1.5 Fetch candidate profile first using compound unique constraint
     const applicant = await db.applicant.findUnique({
-      where: { rollNumber: normalizedRoll },
+      where: {
+        cycleId_rollNumber: {
+          cycleId: targetCycleId,
+          rollNumber: normalizedRoll,
+        },
+      },
     });
 
     if (!applicant) {
-      return NextResponse.json({ error: `Roll number ${normalizedRoll} is not registered.` }, { status: 404 });
+      return NextResponse.json({ error: `Roll number ${normalizedRoll} is not registered for this cycle.` }, { status: 404 });
     }
 
     // Verify session match to prevent overlaps
@@ -38,6 +57,7 @@ export async function POST(req: NextRequest) {
     const scanTime = new Date();
     const updateResult = await db.applicant.updateMany({
       where: {
+        cycleId: targetCycleId,
         rollNumber: normalizedRoll,
         interviewPresented: false,
         ...(session ? { interviewSlot: session } : {}),
@@ -97,13 +117,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    // 2. Parse session parameter and query check-ins
+    // 2. Parse parameters and query check-ins
     const { searchParams } = new URL(req.url);
     const session = searchParams.get('session'); // e.g. "13th August - Forenoon Session"
+    let targetCycleId = searchParams.get('cycleId');
+
+    if (!targetCycleId) {
+      const activeCycle = await db.recruitmentCycle.findFirst({
+        where: { status: 'PUBLISHED' },
+      });
+      if (activeCycle) {
+        targetCycleId = activeCycle.id;
+      }
+    }
+
+    if (!targetCycleId) {
+      return NextResponse.json({
+        secondYear: [],
+        thirdYear: [],
+        unknown: [],
+      });
+    }
 
     const whereClause: any = {
+      cycleId: targetCycleId,
       interviewPresented: true,
     };
+
     if (session) {
       whereClause.interviewSlot = session;
     } else {
