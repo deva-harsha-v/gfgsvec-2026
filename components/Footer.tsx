@@ -1,40 +1,39 @@
 import Link from 'next/link';
 import { RECRUITMENT_ROLES } from '@/lib/roles';
-import { ArrowUpRight, Terminal, Globe, Share2 } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-zinc-950 border-t border-zinc-900 text-zinc-400 font-sans z-10 relative">
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+    <footer className="bg-[#0c0e12] border-t border-[#1e2632] text-gfg-muted font-body z-10 relative">
+      <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
         
         {/* Brand & Mission Column */}
         <div className="space-y-4 lg:col-span-1">
-          <div className="flex items-center space-x-3 text-white">
-            <div className="w-8 h-8 text-emerald-500 flex items-center justify-center shrink-0">
+          <div className="flex items-center space-x-3 text-[#f8fafc]">
+            <div className="w-8 h-8 text-gfg-emerald flex items-center justify-center shrink-0">
               <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
                 <path d="M21.45 14.315c-.143.28-.334.532-.565.745a3.691 3.691 0 0 1-1.104.695 4.51 4.51 0 0 1-3.116-.016 3.79 3.79 0 0 1-2.135-2.078 3.571 3.571 0 0 1-.13-.353h7.418a4.26 4.26 0 0 1-.368 1.008zm-11.99-.654a3.793 3.793 0 0 1-2.134 2.078 4.51 4.51 0 0 1-3.117.016 3.7 3.7 0 0 1-1.104-.695 2.652 2.652 0 0 1-.564-.745 4.221 4.221 0 0 1-.368-1.006H9.59c-.038.12-.08.238-.13.352zm14.501-1.758a3.849 3.849 0 0 0-.082-.475l-9.634-.008a3.932 3.932 0 0 1 1.143-2.348c.363-.35.79-.625 1.26-.809a3.97 3.97 0 0 1 4.484.957l1.521-1.49a5.7 5.7 0 0 0-1.922-1.357 6.283 6.283 0 0 0-2.544-.49 6.35 6.35 0 0 0-2.405.457 6.007 6.007 0 0 0-1.963 1.276 6.142 6.142 0 0 0-1.325 1.94 5.862 5.862 0 0 0-.466 1.864h-.063a5.857 5.857 0 0 0-.467-1.865 6.13 6.13 0 0 0-1.325-1.939A6 6 0 0 0 8.21 6.34a6.698 6.698 0 0 0-4.949.031A5.708 5.708 0 0 0 1.34 7.73l1.52 1.49a4.166 4.166 0 0 1 4.484-.958c.47.184.898.46 1.26.81.368.36.66.792.859 1.268.146.344.242.708.285 1.08l-9.635.008A4.714 4.714 0 0 0 0 12.457a6.493 6.493 0 0 0 .345 2.127 4.927 4.927 0 0 0 1.08 1.783c.528.56 1.17 1 1.88 1.293a6.454 6.454 0 0 0 2.504.457c.824.005 1.64-.15 2.404-.457a5.986 5.986 0 0 0 1.964-1.277 6.116 6.116 0 0 0 1.686-3.076h.273a6.13 6.13 0 0 0 1.686 3.077 5.99 5.99 0 0 0 1.964 1.276 6.345 6.345 0 0 0 2.405.457 6.45 6.45 0 0 0 2.502-.457 5.42 5.42 0 0 0 1.882-1.293 4.928 4.928 0 0 0 1.08-1.783A6.52 6.52 0 0 0 24 12.457a4.757 4.757 0 0 0-.039-.554z"/>
               </svg>
             </div>
             <div>
-              <h4 className="font-extrabold text-sm uppercase tracking-wider text-white">GeeksforGeeks</h4>
-              <p className="text-[10px] text-emerald-400 font-mono font-semibold uppercase">SVEC Student Chapter</p>
+              <h4 className="font-display font-extrabold text-sm uppercase text-[#f8fafc]">GeeksforGeeks</h4>
+              <p className="text-[10px] text-gfg-emerald font-mono font-semibold uppercase">SVEC Student Chapter</p>
             </div>
           </div>
-          <p className="text-xs leading-relaxed text-zinc-400 font-medium">
+          <p className="text-xs leading-relaxed text-gfg-muted font-normal">
             The official student chapter at Sri Vasavi Engineering College. Empowering students through algorithms, web engineering, UI design, and community events.
           </p>
-          {/* Social Links */}
-          <div className="flex items-center space-x-3 pt-2">
-            <a href="https://github.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:text-emerald-400 transition-colors flex items-center justify-center text-zinc-300 font-bold text-xs" aria-label="GitHub">
+          <div className="flex items-center space-x-2 pt-1 font-mono text-xs">
+            <a href="https://github.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#141820] border border-[#1e2632] hover:border-gfg-emerald hover:text-gfg-emerald transition-colors flex items-center justify-center text-[#f1f5f9]">
               GH
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:text-emerald-400 transition-colors flex items-center justify-center text-zinc-300 font-bold text-xs" aria-label="LinkedIn">
+            <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#141820] border border-[#1e2632] hover:border-gfg-emerald hover:text-gfg-emerald transition-colors flex items-center justify-center text-[#f1f5f9]">
               IN
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:text-emerald-400 transition-colors flex items-center justify-center text-zinc-300 font-bold text-xs" aria-label="Instagram">
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#141820] border border-[#1e2632] hover:border-gfg-emerald hover:text-gfg-emerald transition-colors flex items-center justify-center text-[#f1f5f9]">
               IG
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:text-emerald-400 transition-colors flex items-center justify-center text-zinc-300 font-bold text-xs" aria-label="Twitter/X">
+            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-lg bg-[#141820] border border-[#1e2632] hover:border-gfg-emerald hover:text-gfg-emerald transition-colors flex items-center justify-center text-[#f1f5f9]">
               X
             </a>
           </div>
@@ -42,22 +41,26 @@ export default function Footer() {
 
         {/* Column 1: Navigate */}
         <div className="space-y-4">
-          <h4 className="text-white text-xs font-black uppercase tracking-widest border-l-2 border-emerald-500 pl-2">Navigate</h4>
-          <ul className="space-y-2.5 text-xs font-bold uppercase tracking-wider font-mono">
-            <li><Link href="/" className="hover:text-emerald-400 transition-colors">Home</Link></li>
-            <li><Link href="/about" className="hover:text-emerald-400 transition-colors">About Us</Link></li>
-            <li><Link href="/team" className="hover:text-emerald-400 transition-colors">Core Team</Link></li>
-            <li><Link href="/events" className="hover:text-emerald-400 transition-colors">Events & Workshops</Link></li>
-            <li><Link href="/blog" className="hover:text-emerald-400 transition-colors">Blog / Articles</Link></li>
-            <li><Link href="/contact" className="hover:text-emerald-400 transition-colors">Contact</Link></li>
+          <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-gfg-amber pl-2.5">
+            Navigate
+          </h4>
+          <ul className="space-y-2 text-xs font-mono">
+            <li><Link href="/" className="hover:text-gfg-emerald transition-colors">Home</Link></li>
+            <li><Link href="/about" className="hover:text-gfg-emerald transition-colors">About Us</Link></li>
+            <li><Link href="/team" className="hover:text-gfg-emerald transition-colors">Core Team</Link></li>
+            <li><Link href="/events" className="hover:text-gfg-emerald transition-colors">Events & Workshops</Link></li>
+            <li><Link href="/blog" className="hover:text-gfg-emerald transition-colors">Blog / Articles</Link></li>
+            <li><Link href="/contact" className="hover:text-gfg-emerald transition-colors">Contact</Link></li>
           </ul>
         </div>
 
-        {/* Column 2: Join Us & Per-Role Deep Links */}
+        {/* Column 2: Join Us */}
         <div className="space-y-4">
-          <h4 className="text-white text-xs font-black uppercase tracking-widest border-l-2 border-emerald-500 pl-2">Join Us</h4>
-          <ul className="space-y-2 text-xs font-medium text-zinc-400">
-            <li className="pb-1 border-b border-zinc-900 font-bold uppercase tracking-wider text-emerald-400 font-mono">
+          <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-gfg-emerald pl-2.5">
+            Join Us
+          </h4>
+          <ul className="space-y-2 text-xs">
+            <li className="pb-1 border-b border-[#1e2632] font-mono text-gfg-amber font-semibold">
               <Link href="/clubs/gfg/hiring/apply" className="hover:underline flex items-center justify-between">
                 <span>Apply Now 2026</span>
                 <ArrowUpRight size={12} />
@@ -67,10 +70,10 @@ export default function Footer() {
               <li key={role.key}>
                 <Link 
                   href={`/clubs/gfg/hiring/apply?role=${role.slug}`}
-                  className="hover:text-emerald-400 transition-colors flex items-center justify-between text-[11px]"
+                  className="hover:text-gfg-emerald transition-colors flex items-center justify-between text-[11px]"
                 >
                   <span>{role.displayName}</span>
-                  <span className="text-[9px] font-mono text-zinc-600">{role.shortLabel.split('·')[0]}</span>
+                  <span className="text-[9px] font-mono text-gfg-muted">{role.shortLabel.split('·')[0]}</span>
                 </Link>
               </li>
             ))}
@@ -79,20 +82,22 @@ export default function Footer() {
 
         {/* Column 3: Community */}
         <div className="space-y-4">
-          <h4 className="text-white text-xs font-black uppercase tracking-widest border-l-2 border-emerald-500 pl-2">Community</h4>
-          <ul className="space-y-2.5 text-xs font-bold uppercase tracking-wider font-mono">
-            <li><Link href="/events" className="hover:text-emerald-400 transition-colors">Past Events Gallery</Link></li>
-            <li><Link href="/projects" className="hover:text-emerald-400 transition-colors">Student Projects</Link></li>
+          <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-gfg-emerald pl-2.5">
+            Community
+          </h4>
+          <ul className="space-y-2.5 text-xs font-mono">
+            <li><Link href="/events" className="hover:text-gfg-emerald transition-colors">Past Events Gallery</Link></li>
+            <li><Link href="/projects" className="hover:text-gfg-emerald transition-colors">Student Projects</Link></li>
             <li>
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-emerald-400 transition-colors flex items-center space-x-1">
+              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-gfg-emerald transition-colors flex items-center space-x-1">
                 <span>Issue Tracker / GitHub</span>
                 <ArrowUpRight size={10} />
               </a>
             </li>
             <li>
-              <Link href="/clubs/gfg/hiring" className="hover:text-emerald-400 transition-colors flex items-center space-x-1">
+              <Link href="/clubs/gfg/hiring" className="hover:text-gfg-emerald transition-colors flex items-center space-x-1.5">
                 <span>Recruitment Status</span>
-                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping ml-1" />
+                <span className="w-1.5 h-1.5 bg-gfg-amber rounded-full animate-ping" />
               </Link>
             </li>
           </ul>
@@ -100,18 +105,18 @@ export default function Footer() {
 
       </div>
 
-      {/* Legal & Footer Bottom Row */}
-      <div className="bg-black py-6 border-t border-zinc-900 text-center text-[10px] font-mono tracking-wider text-zinc-500">
+      {/* Footer Bottom */}
+      <div className="bg-[#090b0e] py-6 border-t border-[#181f28] text-center text-[11px] font-mono text-gfg-muted">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span>&copy; {new Date().getFullYear()} GeeksforGeeks SVEC Student Chapter. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} GeeksforGeeks SVEC Student Chapter</span>
           <div className="flex items-center space-x-4">
-            <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+            <Link href="/privacy" className="hover:text-[#f1f5f9] transition-colors">Privacy Policy</Link>
             <span>•</span>
-            <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+            <Link href="/terms" className="hover:text-[#f1f5f9] transition-colors">Terms</Link>
             <span>•</span>
-            <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact</Link>
+            <Link href="/contact" className="hover:text-[#f1f5f9] transition-colors">Contact</Link>
             <span>•</span>
-            <Link href="/admin/login" className="hover:text-emerald-400 transition-colors font-bold uppercase">Admin Login</Link>
+            <Link href="/admin/login" className="hover:text-gfg-emerald font-bold transition-colors">Admin Login</Link>
           </div>
         </div>
       </div>

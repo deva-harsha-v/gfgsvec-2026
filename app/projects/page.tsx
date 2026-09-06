@@ -2,7 +2,7 @@
 
 import PublicLayout from '@/components/PublicLayout';
 import PageHeader from '@/components/PageHeader';
-import { FolderGit2, ExternalLink, Code, Layers } from 'lucide-react';
+import { FolderGit2 } from 'lucide-react';
 
 export default function ProjectsPage() {
   const projects = [
@@ -31,12 +31,12 @@ export default function ProjectsPage() {
 
   return (
     <PublicLayout>
-      <PageHeader title="Student Projects" subtitle="Built By GFG SVEC Chapter" />
+      <PageHeader title="Student Projects" subtitle="Open Source & Campus Builds" />
       
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 space-y-12">
-        <div className="max-w-2xl">
-          <h2 className="text-xl md:text-3xl font-black uppercase text-white tracking-tight">Open Source & Student Builds</h2>
-          <p className="text-xs md:text-sm text-zinc-400 mt-2 leading-relaxed font-medium">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-24 space-y-12">
+        <div className="max-w-2xl space-y-2">
+          <h2 className="font-display font-bold text-2xl md:text-4xl uppercase text-[#f8fafc] tracking-tight">Open Source Initiatives</h2>
+          <p className="text-xs md:text-sm text-gfg-muted leading-relaxed">
             Discover software platforms, tools, and design systems designed and maintained by chapter members.
           </p>
         </div>
@@ -45,20 +45,20 @@ export default function ProjectsPage() {
           {projects.map((proj, idx) => (
             <div 
               key={idx} 
-              className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-6 flex flex-col justify-between space-y-6 hover:border-emerald-500/40 transition-colors shadow-xl"
+              className="bg-[#141820] border border-[#1e2632] rounded-3xl p-6 flex flex-col justify-between space-y-6 shadow-xl hover:border-gfg-emerald/40 transition-colors"
             >
               <div className="space-y-3">
-                <span className="px-2.5 py-0.5 bg-emerald-950/60 text-emerald-400 rounded-md text-[9px] font-mono font-bold uppercase tracking-widest">
+                <span className="px-2.5 py-0.5 bg-[#0c0e12] border border-[#1e2632] text-gfg-amber rounded-md text-[10px] font-mono font-bold uppercase">
                   {proj.category}
                 </span>
-                <h3 className="font-extrabold text-base uppercase text-white">{proj.title}</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed font-medium">{proj.description}</p>
+                <h3 className="font-display font-bold text-base uppercase text-[#f8fafc]">{proj.title}</h3>
+                <p className="text-xs text-gfg-muted leading-relaxed font-normal">{proj.description}</p>
               </div>
 
-              <div className="space-y-3 pt-3 border-t border-zinc-800/60">
+              <div className="space-y-3 pt-3 border-t border-[#1e2632]">
                 <div className="flex flex-wrap gap-1.5">
                   {proj.tech.map((t) => (
-                    <span key={t} className="px-2 py-0.5 bg-zinc-950 text-zinc-500 rounded text-[9px] font-mono font-semibold">
+                    <span key={t} className="px-2 py-0.5 bg-[#0c0e12] text-gfg-muted rounded text-[10px] font-mono font-medium">
                       {t}
                     </span>
                   ))}
@@ -67,7 +67,7 @@ export default function ProjectsPage() {
                   href={proj.github} 
                   target="_blank" 
                   rel="noreferrer"
-                  className="inline-flex items-center space-x-1.5 text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold uppercase"
+                  className="inline-flex items-center space-x-1.5 text-xs font-mono text-gfg-emerald hover:underline font-bold uppercase"
                 >
                   <FolderGit2 size={14} />
                   <span>View Repository</span>

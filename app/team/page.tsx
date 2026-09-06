@@ -58,13 +58,13 @@ export default function TeamPage() {
 
   return (
     <PublicLayout>
-      <PageHeader title="Core Team & Leads" subtitle="The Minds Behind GFG SVEC" />
+      <PageHeader title="Core Team & Leads" subtitle="Executive Leadership 2025-26" />
       
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 space-y-12">
-        <div className="max-w-2xl">
-          <h2 className="text-xl md:text-3xl font-black uppercase text-white tracking-tight">Executive Leadership 2025-26</h2>
-          <p className="text-xs md:text-sm text-zinc-400 mt-2 leading-relaxed font-medium">
-            Meet the student organizers, technical leads, and designers building the GeeksforGeeks chapter experience at Sri Vasavi Engineering College.
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-24 space-y-12">
+        <div className="max-w-2xl space-y-2">
+          <h2 className="font-display font-bold text-2xl md:text-4xl uppercase text-[#f8fafc] tracking-tight">The Student Organizers</h2>
+          <p className="text-xs md:text-sm text-gfg-muted leading-relaxed">
+            Meet the student leads, developers, and designers managing the GeeksforGeeks chapter experience at Sri Vasavi Engineering College.
           </p>
         </div>
 
@@ -72,31 +72,31 @@ export default function TeamPage() {
           {teamMembers.map((member, idx) => (
             <div 
               key={idx}
-              className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-6 flex flex-col justify-between space-y-6 hover:border-emerald-500/40 transition-colors shadow-xl"
+              className="bg-[#141820] border border-[#1e2632] rounded-3xl p-6 flex flex-col justify-between space-y-6 hover:border-gfg-emerald/40 transition-colors shadow-xl"
             >
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-emerald-500/30 text-emerald-400 font-black text-xl flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-[#0c0e12] border border-gfg-emerald/30 text-gfg-emerald font-display font-black text-lg flex items-center justify-center shrink-0">
                     {member.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm uppercase text-white">{member.name}</h3>
-                    <p className="text-[10px] text-emerald-400 font-mono font-bold uppercase">{member.role}</p>
-                    <span className="inline-block text-[9px] text-zinc-500 font-mono uppercase bg-zinc-950 px-2 py-0.5 rounded mt-1">
+                    <h3 className="font-display font-bold text-sm uppercase text-[#f8fafc]">{member.name}</h3>
+                    <p className="text-[10px] text-gfg-emerald font-mono font-bold uppercase">{member.role}</p>
+                    <span className="inline-block text-[9px] text-gfg-muted font-mono uppercase bg-[#0c0e12] px-2 py-0.5 rounded mt-1 border border-[#1e2632]">
                       {member.division}
                     </span>
                   </div>
                 </div>
 
-                <p className="text-xs text-zinc-400 leading-relaxed font-medium">{member.bio}</p>
+                <p className="text-xs text-gfg-muted leading-relaxed font-normal">{member.bio}</p>
               </div>
 
-              <div className="flex items-center space-x-3 pt-3 border-t border-zinc-800/60 font-mono text-[10px]">
-                <a href={member.github} target="_blank" rel="noreferrer" className="text-zinc-500 hover:text-white transition-colors" aria-label="GitHub">
+              <div className="flex items-center space-x-3 pt-3 border-t border-[#1e2632] font-mono text-[10px]">
+                <a href={member.github} target="_blank" rel="noreferrer" className="text-gfg-muted hover:text-[#f8fafc] transition-colors" aria-label="GitHub">
                   GitHub
                 </a>
                 <span>•</span>
-                <a href={member.linkedin} target="_blank" rel="noreferrer" className="text-zinc-500 hover:text-emerald-400 transition-colors" aria-label="LinkedIn">
+                <a href={member.linkedin} target="_blank" rel="noreferrer" className="text-gfg-muted hover:text-gfg-emerald transition-colors" aria-label="LinkedIn">
                   LinkedIn
                 </a>
               </div>
