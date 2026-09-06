@@ -2,34 +2,31 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
-function createPool() {
-  const rawUrl = process.env.DATABASE_URL || '';
-  if (!rawUrl) return new Pool();
+function createPrismaClient(): PrismaClient {
+  const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
+  
+  if (!connectionString) {
+    console.error("DATABASE_URL environment variable is missing on server!");
+  }
+
   try {
-    const parsed = new URL(rawUrl);
-    return new Pool({
-      host: parsed.hostname,
-      port: parseInt(parsed.port || '6543', 10),
-      database: parsed.pathname.slice(1) || 'postgres',
-      user: decodeURIComponent(parsed.username),
-      password: decodeURIComponent(parsed.password),
+    const pool = new Pool({
+      connectionString,
       ssl: { rejectUnauthorized: false },
     });
-  } catch {
-    return new Pool({ connectionString: rawUrl, ssl: { rejectUnauthorized: false } });
+    const adapter = new PrismaPg(pool);
+    return new PrismaClient({
+      adapter,
+      log: ['error'],
+    });
+  } catch (err) {
+    console.error("Failed to initialize PrismaPg adapter:", err);
+    return new PrismaClient();
   }
 }
 
-const pool = createPool();
-const adapter = new PrismaPg(pool);
-
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-export const db =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    adapter,
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  });
+export const db = globalForPrisma.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

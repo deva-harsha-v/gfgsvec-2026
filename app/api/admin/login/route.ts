@@ -5,6 +5,11 @@ import { AdminLoginSchema } from '@/lib/schemas';
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.DATABASE_URL) {
+      console.error('DATABASE_URL environment variable is not defined on server.');
+      return NextResponse.json({ error: 'Database environment variables not configured on Vercel.' }, { status: 500 });
+    }
+
     const body = await req.json();
     const validation = AdminLoginSchema.safeParse(body);
 
@@ -41,8 +46,8 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login API error:', error);
-    return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Internal server error.' }, { status: 500 });
   }
 }
