@@ -8,7 +8,7 @@ generator client {
 
 model Applicant {
   id                 String            @id @default(cuid())
-  applicationId      String            @unique // Sequentially generated: GFG-SVEC-2026-XXXX
+  applicationId      String            @unique // Non-enumerable: GFG-SVEC-2026-XXXX
   name               String
   rollNumber         String            @unique // Duplicate prevention
   year               String
