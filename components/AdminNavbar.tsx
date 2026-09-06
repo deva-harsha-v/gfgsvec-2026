@@ -21,7 +21,7 @@ export default function AdminNavbar() {
   };
 
   const navItems = [
-    { name: 'Dashboard & Queue', path: '/admin', icon: Users },
+    { name: 'Dashboard & Queue', path: '/admin/gfg-hiring', icon: Users },
     { name: 'Attendance Check-In', path: '/admin/attendance', icon: CheckSquare },
     { name: 'Change Password', path: '/admin/settings', icon: Settings },
   ];

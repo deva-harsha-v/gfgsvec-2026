@@ -127,30 +127,9 @@ export async function POST(req: NextRequest) {
     await fs.writeFile(filePath, fileBuffer);
     const resumePath = fileName;
 
-    // 6. Transactional sequential Application ID generation
-    let nextSeq: number;
-    try {
-      const seqResult = await db.$queryRawUnsafe<{ nextval: bigint }[]>(
-        "SELECT nextval('application_id_seq');"
-      );
-      nextSeq = Number(seqResult[0].nextval);
-    } catch (err: any) {
-      // If sequence doesn't exist, create it dynamically and retry nextval
-      if (err.message?.includes('relation "application_id_seq" does not exist') || err.code === 'P2010') {
-        await db.$executeRawUnsafe(
-          "CREATE SEQUENCE IF NOT EXISTS application_id_seq START WITH 5;"
-        );
-        const seqResult = await db.$queryRawUnsafe<{ nextval: bigint }[]>(
-          "SELECT nextval('application_id_seq');"
-        );
-        nextSeq = Number(seqResult[0].nextval);
-      } else {
-        throw err;
-      }
-    }
-
-    const paddedNum = String(nextSeq).padStart(4, '0');
-    const applicationId = `GFG-SVEC-2026-${paddedNum}`;
+    // 6. Generate secure, non-sequential and non-enumerable Application ID
+    const randomSuffix = crypto.randomBytes(4).toString('hex').toUpperCase(); // 8 characters
+    const applicationId = `GFG-SVEC-2026-${randomSuffix}`;
 
     // Insert applicant in a transaction with Serializable isolation level to guarantee slot limit is strictly obeyed under high concurrency
     try {

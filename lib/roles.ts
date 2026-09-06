@@ -1,5 +1,6 @@
 export interface RecruitmentRole {
   key: string;
+  slug: string;
   num: string;
   displayName: string;
   category: 'TECHNICAL' | 'NON_TECHNICAL';
@@ -13,6 +14,7 @@ export interface RecruitmentRole {
 export const RECRUITMENT_ROLES: RecruitmentRole[] = [
   {
     key: 'DIGITAL_DEVELOPMENT',
+    slug: 'webdev',
     num: '01',
     displayName: 'Digital Development',
     category: 'TECHNICAL',
@@ -31,6 +33,7 @@ export const RECRUITMENT_ROLES: RecruitmentRole[] = [
   },
   {
     key: 'COMPETITIVE_PROGRAMMING',
+    slug: 'dsa',
     num: '02',
     displayName: 'Competitive Programming',
     category: 'TECHNICAL',
@@ -48,6 +51,7 @@ export const RECRUITMENT_ROLES: RecruitmentRole[] = [
   },
   {
     key: 'DESIGN',
+    slug: 'design',
     num: '03',
     displayName: 'Design',
     category: 'NON_TECHNICAL',
@@ -66,6 +70,7 @@ export const RECRUITMENT_ROLES: RecruitmentRole[] = [
   },
   {
     key: 'SOCIAL_MEDIA_MARKETING',
+    slug: 'marketing',
     num: '04',
     displayName: 'Social Media & Marketing',
     category: 'NON_TECHNICAL',
@@ -84,6 +89,7 @@ export const RECRUITMENT_ROLES: RecruitmentRole[] = [
   },
   {
     key: 'PUBLIC_RELATIONS_OUTREACH',
+    slug: 'pr',
     num: '05',
     displayName: 'Public Relations & Outreach',
     category: 'NON_TECHNICAL',
@@ -102,6 +108,7 @@ export const RECRUITMENT_ROLES: RecruitmentRole[] = [
   },
   {
     key: 'EVENT_MANAGEMENT',
+    slug: 'events',
     num: '06',
     displayName: 'Event Management',
     category: 'NON_TECHNICAL',
@@ -128,3 +135,9 @@ export const ROLE_DISPLAY_NAMES: Record<string, string> = {
   PUBLIC_RELATIONS_OUTREACH: 'Public Relations & Outreach',
   EVENT_MANAGEMENT: 'Event Management',
 };
+
+export function getRoleBySlug(slug: string): RecruitmentRole | undefined {
+  if (!slug) return undefined;
+  const normalized = slug.toLowerCase().trim();
+  return RECRUITMENT_ROLES.find(r => r.slug.toLowerCase() === normalized || r.key.toLowerCase() === normalized);
+}

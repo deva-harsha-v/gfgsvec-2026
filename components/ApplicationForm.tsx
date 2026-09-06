@@ -23,7 +23,7 @@ const FormSchema = ApplicantSchema.extend({
 
 type FormValues = z.infer<typeof FormSchema>;
 
-import { RECRUITMENT_ROLES, ROLE_DISPLAY_NAMES } from '@/lib/roles';
+import { RECRUITMENT_ROLES, ROLE_DISPLAY_NAMES, getRoleBySlug } from '@/lib/roles';
 
 const TECHNICAL_FIELDS = RECRUITMENT_ROLES
   .filter(r => r.category === 'TECHNICAL')
@@ -62,7 +62,6 @@ export default function ApplicationForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bypass = searchParams ? searchParams.get('bypass') : '';
-
   const {
     register,
     handleSubmit,
@@ -89,6 +88,16 @@ export default function ApplicationForm() {
     },
     mode: 'onTouched',
   });
+
+  useEffect(() => {
+    const roleParam = searchParams ? searchParams.get('role') : '';
+    if (roleParam) {
+      const matched = getRoleBySlug(roleParam);
+      if (matched) {
+        setValue('interestedFields', [matched.key]);
+      }
+    }
+  }, [searchParams, setValue]);
 
   const { fields, append, remove } = useFieldArray({
     control,
