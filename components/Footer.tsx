@@ -6,10 +6,10 @@ export default function Footer() {
   return (
     <footer className="bg-[#0c0e12] border-t border-[#1e2632] text-[#94a3b8] font-body z-10 relative overflow-hidden">
       
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 relative z-10">
         
-        {/* Brand Column */}
-        <div className="space-y-4 lg:col-span-2">
+        {/* Brand Column (col-span-2) */}
+        <div className="space-y-4 md:col-span-3 lg:col-span-2">
           <div className="flex items-center space-x-3 text-[#f8fafc]">
             <div className="w-8 h-8 text-[#00b964] flex items-center justify-center shrink-0">
               <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -105,6 +105,20 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Column 4: Legal */}
+        <div className="space-y-4">
+          <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-[#00b964] pl-2.5">
+            Legal
+          </h4>
+          <ul className="space-y-2 text-xs font-mono">
+            <li><Link href="/privacy" className="hover:text-[#00b964] transition-colors">Privacy Policy</Link></li>
+            <li><Link href="/terms" className="hover:text-[#00b964] transition-colors">Terms of Use</Link></li>
+            <li><Link href="/terms" className="hover:text-[#00b964] transition-colors">Guidelines</Link></li>
+            <li><Link href="/contact" className="hover:text-[#00b964] transition-colors">Contact Us</Link></li>
+            <li><Link href="/admin/login" className="hover:text-[#00b964] transition-colors">Admin Login</Link></li>
+          </ul>
+        </div>
+
       </div>
 
       {/* Copyright & Made With Love Row */}
@@ -112,13 +126,6 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>&copy; {new Date().getFullYear()} GeeksforGeeks SVEC Student Chapter. All rights reserved.</span>
           <span className="text-[#f8fafc]">Made with <span className="text-red-500">❤</span> by the GFG SVEC Core Team</span>
-          <div className="flex items-center space-x-3 text-[11px]">
-            <Link href="/privacy" className="hover:text-[#f1f5f9]">Privacy Policy</Link>
-            <span>•</span>
-            <Link href="/terms" className="hover:text-[#f1f5f9]">Terms</Link>
-            <span>•</span>
-            <Link href="/admin/login" className="hover:text-[#00b964] font-bold">Admin</Link>
-          </div>
         </div>
       </div>
 
