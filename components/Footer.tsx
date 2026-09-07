@@ -128,26 +128,20 @@ export default function Footer() {
       </div>
 
       {/* 3. Bottom Copyright & "Made with ❤" Row */}
-      <div className="py-6 text-xs font-mono text-[#94a3b8] relative z-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span>&copy; {new Date().getFullYear()} GeeksforGeeks SVEC Student Chapter. All rights reserved.</span>
-          <span className="text-[#f8fafc]">Made with <span className="text-red-500">❤</span> by GFG SVEC Core Team</span>
+      <div className="py-5 text-xs font-mono text-[#64748b] relative z-10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span>&copy; {new Date().getFullYear()} GFG SVEC. All rights reserved.</span>
+          <span className="text-[#94a3b8]">Made with <span className="text-red-500">❤</span> by the GFG Core Team</span>
         </div>
       </div>
 
-      {/* 4. Large Faded Wordmark as Final Decorative Element */}
-      <div className="w-full text-center pb-6 pt-2 pointer-events-none select-none overflow-hidden opacity-10 relative z-10">
-        <span className="font-display font-black text-6xl sm:text-8xl md:text-[12rem] tracking-tighter uppercase leading-none block outline-text">
+      {/* 4. Large Solid Display Wordmark (Matching MLSC SVEC Reference Style Exactly) */}
+      <div className="w-full text-center pointer-events-none select-none overflow-hidden relative z-0 -mt-2 pb-2">
+        <span className="font-display font-black text-[13vw] sm:text-[14vw] lg:text-[16vw] tracking-tighter uppercase leading-none block text-[#151922]">
           GFG SVEC
         </span>
       </div>
 
-      <style jsx>{`
-        .outline-text {
-          -webkit-text-stroke: 2px #ffffff;
-          color: transparent;
-        }
-      `}</style>
     </footer>
   );
 }
