@@ -111,7 +111,7 @@ export default function GfgHomePage() {
       {/* ---------------------------------------------------- */}
       {/* 3. HERO SECTION (PATTERN #3) */}
       {/* ---------------------------------------------------- */}
-      <section className="relative text-[#f1f5f9] py-20 md:py-28 bg-[#0c0e12] overflow-hidden border-b border-[#1e2632]">
+      <section className="relative text-[#f1f5f9] min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center py-12 md:py-16 bg-[#0c0e12] overflow-hidden border-b border-[#1e2632]">
         
         {/* Background Subtle Image Mask */}
         <div className="absolute inset-0 z-0 w-full h-full pointer-events-none overflow-hidden">
@@ -125,11 +125,10 @@ export default function GfgHomePage() {
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#00b964]/10 blur-[130px] rounded-full pointer-events-none" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center space-y-8">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 text-center space-y-7 md:space-y-8 my-auto">
           
-          {/* Eyebrow Pill Badge */}
-          <div className="inline-flex items-center space-x-2.5 px-4 py-1.5 rounded-full bg-[#141820] border border-[#1e2632] text-xs font-mono font-medium text-[#94a3b8] mx-auto">
-            <span className="w-2 h-2 bg-[#f59e0b] rounded-full animate-ping shrink-0" />
+          {/* Eyebrow Pill Badge (Clean, No Pulsing Dot) */}
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#141820] border border-[#1e2632] text-xs font-mono font-medium text-[#94a3b8] mx-auto tracking-wide">
             <span>GEEKSFORGEEKS CAMPUS BODY · SVEC</span>
           </div>
 
@@ -141,7 +140,7 @@ export default function GfgHomePage() {
           </h1>
 
           {/* Structural Boxed Highlight & Subhead */}
-          <div className="space-y-4 max-w-2xl mx-auto">
+          <div className="space-y-3.5 max-w-2xl mx-auto">
             <div className="inline-block border border-[#00b964]/40 px-4 py-1.5 rounded-2xl bg-[#00b964]/5 font-mono text-xs text-[#00b964] font-bold uppercase tracking-wider">
               {activeCycle ? activeCycle.title : 'GFG SVEC EXECUTIVE BOARD 2026'}
             </div>
@@ -151,10 +150,10 @@ export default function GfgHomePage() {
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-1">
             <Link 
               href="/clubs/gfg/hiring/apply"
-              className="px-8 py-4 bg-[#00b964] hover:bg-[#00e575] text-[#0c0e12] rounded-full text-xs font-display font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xl shadow-[#00b964]/20 flex items-center space-x-2 hover:scale-105"
+              className="px-7 py-3.5 bg-[#00b964] hover:bg-[#00e575] text-[#0c0e12] rounded-full text-xs font-display font-extrabold uppercase tracking-wider transition-all duration-200 shadow-xl shadow-[#00b964]/20 flex items-center space-x-2 hover:scale-105"
             >
               <span>Apply for Executive Board</span>
               <ArrowUpRight size={16} />
@@ -162,15 +161,15 @@ export default function GfgHomePage() {
             
             <a 
               href="#roles"
-              className="px-8 py-4 bg-[#141820] hover:bg-[#1e2632] text-[#f8fafc] rounded-full text-xs font-display font-bold uppercase tracking-wider transition-colors border border-[#1e2632]"
+              className="px-7 py-3.5 bg-[#141820] hover:bg-[#1e2632] text-[#f8fafc] rounded-full text-xs font-display font-bold uppercase tracking-wider transition-colors border border-[#1e2632]"
             >
               Explore Roles
             </a>
           </div>
 
           {/* Countdown Clock Widget */}
-          <div className="pt-8 max-w-xl mx-auto">
-            <div className="bg-[#141820]/90 border border-[#1e2632] rounded-3xl p-6 backdrop-blur-md shadow-2xl space-y-4">
+          <div className="pt-4 max-w-xl mx-auto">
+            <div className="bg-[#141820]/90 border border-[#1e2632] rounded-3xl p-5 md:p-6 backdrop-blur-md shadow-2xl space-y-3.5">
               <div className="flex items-center justify-between border-b border-[#1e2632] pb-3">
                 <span className="text-[11px] font-mono text-[#f59e0b] font-semibold uppercase tracking-wider">
                   Recruitment Status Window

@@ -6,10 +6,11 @@ export default function Footer() {
   return (
     <footer className="bg-[#0c0e12] border-t border-[#1e2632] text-[#94a3b8] font-body z-10 relative overflow-hidden">
       
-      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-8 relative z-10">
+      {/* 1. Multi-Column Link Grid + Brand Block */}
+      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 lg:gap-12 relative z-10">
         
-        {/* Brand Column (col-span-2) */}
-        <div className="space-y-4 md:col-span-3 lg:col-span-2">
+        {/* Brand Block */}
+        <div className="space-y-4 lg:col-span-2">
           <div className="flex items-center space-x-3 text-[#f8fafc]">
             <div className="w-8 h-8 text-[#00b964] flex items-center justify-center shrink-0">
               <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
@@ -21,11 +22,11 @@ export default function Footer() {
               <p className="text-[10px] text-[#00b964] font-mono font-semibold uppercase">SVEC Student Chapter</p>
             </div>
           </div>
-          <p className="text-xs leading-relaxed text-[#94a3b8] max-w-sm">
-            Empowering students at Sri Vasavi Engineering College through algorithms, web engineering, UI design systems, and campus leadership events.
+          <p className="text-xs leading-relaxed text-[#94a3b8] max-w-sm font-normal">
+            Empowering students at Sri Vasavi Engineering College through algorithms, software engineering, UI design systems, and campus leadership events.
           </p>
 
-          <div className="flex items-center space-x-2 pt-2 font-mono text-xs">
+          <div className="flex flex-wrap items-center gap-2 pt-1 font-mono text-xs">
             <a href="https://instagram.com" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-xl bg-[#141820] border border-[#1e2632] hover:border-[#00b964] hover:text-[#00b964] transition-colors text-[#f1f5f9] text-[11px] font-bold">
               Instagram
             </a>
@@ -36,35 +37,36 @@ export default function Footer() {
               GitHub
             </a>
             <a href="https://twitter.com" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-xl bg-[#141820] border border-[#1e2632] hover:border-[#00b964] hover:text-[#00b964] transition-colors text-[#f1f5f9] text-[11px] font-bold">
-              X / Twitter
+              X
             </a>
           </div>
         </div>
 
         {/* Column 1: Navigate */}
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-[#f59e0b] pl-2.5">
             Navigate
           </h4>
           <ul className="space-y-2 text-xs font-mono">
             <li><Link href="/" className="hover:text-[#00b964] transition-colors">Home</Link></li>
-            <li><Link href="/about" className="hover:text-[#00b964] transition-colors">About Us</Link></li>
-            <li><Link href="/team" className="hover:text-[#00b964] transition-colors">Core Team</Link></li>
-            <li><Link href="/events" className="hover:text-[#00b964] transition-colors">Events & Workshops</Link></li>
-            <li><Link href="/blog" className="hover:text-[#00b964] transition-colors">Blog / Articles</Link></li>
-            <li><Link href="/contact" className="hover:text-[#00b964] transition-colors">Contact Desk</Link></li>
+            <li><Link href="/about" className="hover:text-[#00b964] transition-colors">About</Link></li>
+            <li><Link href="/team" className="hover:text-[#00b964] transition-colors">Team</Link></li>
+            <li><Link href="/events" className="hover:text-[#00b964] transition-colors">Events</Link></li>
+            <li><Link href="/#roles" className="hover:text-[#00b964] transition-colors">Roles</Link></li>
+            <li><Link href="/projects" className="hover:text-[#00b964] transition-colors">Projects</Link></li>
+            <li><Link href="/contact" className="hover:text-[#00b964] transition-colors">Contact</Link></li>
           </ul>
         </div>
 
         {/* Column 2: Join Us */}
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-[#00b964] pl-2.5">
             Join Us
           </h4>
           <ul className="space-y-2 text-xs">
             <li className="pb-1 border-b border-[#1e2632] font-mono text-[#f59e0b] font-semibold">
               <Link href="/clubs/gfg/hiring/apply" className="hover:underline flex items-center justify-between">
-                <span>Apply Now 2026</span>
+                <span>Apply Now</span>
                 <ArrowUpRight size={12} />
               </Link>
             </li>
@@ -75,7 +77,6 @@ export default function Footer() {
                   className="hover:text-[#00b964] transition-colors flex items-center justify-between text-[11px]"
                 >
                   <span>{role.displayName}</span>
-                  <span className="text-[9px] font-mono text-[#94a3b8]">{role.shortLabel.split('·')[0]}</span>
                 </Link>
               </li>
             ))}
@@ -83,30 +84,30 @@ export default function Footer() {
         </div>
 
         {/* Column 3: Community */}
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-[#00b964] pl-2.5">
             Community
           </h4>
-          <ul className="space-y-2.5 text-xs font-mono">
-            <li><Link href="/events" className="hover:text-[#00b964] transition-colors">Past Events Gallery</Link></li>
-            <li><Link href="/projects" className="hover:text-[#00b964] transition-colors">Student Projects</Link></li>
+          <ul className="space-y-2 text-xs font-mono">
+            <li><Link href="/events" className="hover:text-[#00b964] transition-colors">Past Events</Link></li>
+            <li><Link href="/blog" className="hover:text-[#00b964] transition-colors">Blog</Link></li>
             <li>
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-[#00b964] transition-colors flex items-center space-x-1">
-                <span>Issue Tracker / GitHub</span>
+              <a href="https://github.com/deva-harsha-v/gfgsvec-2026" target="_blank" rel="noreferrer" className="hover:text-[#00b964] transition-colors flex items-center space-x-1">
+                <span>Contribute</span>
                 <ArrowUpRight size={10} />
               </a>
             </li>
             <li>
-              <Link href="/clubs/gfg/hiring" className="hover:text-[#00b964] transition-colors flex items-center space-x-1.5">
-                <span>Recruitment Status</span>
-                <span className="w-1.5 h-1.5 bg-[#f59e0b] rounded-full animate-ping" />
+              <Link href="/clubs/gfg/hiring" className="hover:text-[#00b964] transition-colors flex items-center space-x-1">
+                <span>Site Status</span>
+                <span className="w-1.5 h-1.5 bg-[#00b964] rounded-full shrink-0" />
               </Link>
             </li>
           </ul>
         </div>
 
         {/* Column 4: Legal */}
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           <h4 className="text-[#f8fafc] text-xs font-display font-extrabold uppercase tracking-wider border-l-2 border-[#00b964] pl-2.5">
             Legal
           </h4>
@@ -115,23 +116,28 @@ export default function Footer() {
             <li><Link href="/terms" className="hover:text-[#00b964] transition-colors">Terms of Use</Link></li>
             <li><Link href="/terms" className="hover:text-[#00b964] transition-colors">Guidelines</Link></li>
             <li><Link href="/contact" className="hover:text-[#00b964] transition-colors">Contact Us</Link></li>
-            <li><Link href="/admin/login" className="hover:text-[#00b964] transition-colors">Admin Login</Link></li>
+            <li><Link href="/admin/login" className="hover:text-[#00b964] transition-colors">Admin</Link></li>
           </ul>
         </div>
 
       </div>
 
-      {/* Copyright & Made With Love Row */}
-      <div className="bg-[#090b0e] py-6 border-t border-[#181f28] text-center text-xs font-mono text-[#94a3b8] relative z-10">
+      {/* 2. Horizontal Divider Rule */}
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <hr className="border-[#1e2632]" />
+      </div>
+
+      {/* 3. Bottom Copyright & "Made with ❤" Row */}
+      <div className="py-6 text-xs font-mono text-[#94a3b8] relative z-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span>&copy; {new Date().getFullYear()} GeeksforGeeks SVEC Student Chapter. All rights reserved.</span>
-          <span className="text-[#f8fafc]">Made with <span className="text-red-500">❤</span> by the GFG SVEC Core Team</span>
+          <span className="text-[#f8fafc]">Made with <span className="text-red-500">❤</span> by GFG SVEC Core Team</span>
         </div>
       </div>
 
-      {/* Signature Closing Flourish: Giant Faded Outlined Display Wordmark */}
-      <div className="w-full text-center py-6 pointer-events-none select-none overflow-hidden opacity-10">
-        <span className="font-display font-black text-7xl sm:text-9xl md:text-[14rem] tracking-tighter uppercase leading-none block outline-text">
+      {/* 4. Large Faded Wordmark as Final Decorative Element */}
+      <div className="w-full text-center pb-6 pt-2 pointer-events-none select-none overflow-hidden opacity-10 relative z-10">
+        <span className="font-display font-black text-6xl sm:text-8xl md:text-[12rem] tracking-tighter uppercase leading-none block outline-text">
           GFG SVEC
         </span>
       </div>
