@@ -135,9 +135,16 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* 4. Large Solid Display Wordmark (Matching MLSC SVEC Reference Style Exactly) */}
-      <div className="w-full text-center pointer-events-none select-none overflow-hidden relative z-0 -mt-2 pb-2">
-        <span className="font-display font-black text-[13vw] sm:text-[14vw] lg:text-[16vw] tracking-tighter uppercase leading-none block text-[#151922]">
+      {/* 4. Large Solid Display Wordmark with Radial Brand Glow */}
+      <div className="w-full text-center pointer-events-none select-none overflow-hidden relative z-10 pt-4 pb-8 border-t border-[#1e2632]/40">
+        
+        {/* Soft Radial Gradient Glow (Brand Green & Teal Accent) */}
+        <div className="absolute inset-x-0 bottom-0 top-0 flex items-center justify-center pointer-events-none z-0">
+          <div className="w-[85vw] max-w-[1000px] h-[200px] bg-gradient-to-r from-[#00b964]/35 via-[#00e575]/30 to-[#06b6d4]/25 blur-[110px] rounded-full" />
+        </div>
+
+        {/* Solid High-Contrast White Display Wordmark */}
+        <span className="font-display font-black text-[13vw] sm:text-[14vw] lg:text-[16vw] tracking-tighter uppercase leading-none block text-[#f8fafc] relative z-10 drop-shadow-[0_8px_30px_rgba(0,185,100,0.3)]">
           GFG SVEC
         </span>
       </div>
