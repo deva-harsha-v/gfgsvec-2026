@@ -62,7 +62,13 @@ export async function GET() {
 
   return NextResponse.json({
     hasActiveCycle: true,
-    cycle: activeCycle,
+    cycle: {
+      id: activeCycle.id,
+      title: activeCycle.title,
+      status: activeCycle.status,
+      opensAt: activeCycle.opensAt,
+      closesAt: activeCycle.closesAt,
+    },
     isOpen,
     isClosed,
     serverTime: now.toISOString(),

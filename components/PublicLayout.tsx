@@ -1,5 +1,6 @@
 import Navbar from './Navbar';
 import Footer from './Footer';
+import FaqWidget from './FaqWidget';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </div>
       <Footer />
+      <FaqWidget />
     </div>
   );
 }

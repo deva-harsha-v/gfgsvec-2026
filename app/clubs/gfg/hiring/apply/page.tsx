@@ -4,7 +4,9 @@ import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import ApplicationForm from '@/components/ApplicationForm';
-import { ChevronLeft, Terminal, AlertCircle } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import FaqWidget from '@/components/FaqWidget';
+import { ChevronLeft, AlertCircle, Clock, CheckCircle2, Lock } from 'lucide-react';
 
 function ApplyPageContent() {
   const searchParams = useSearchParams();
@@ -15,11 +17,15 @@ function ApplyPageContent() {
   const [isClosed, setIsClosed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cycleTitle, setCycleTitle] = useState<string>('');
 
   useEffect(() => {
     fetch('/api/recruitment-status')
       .then((res) => res.json())
       .then((data) => {
+        if (data.cycle?.title) {
+          setCycleTitle(data.cycle.title);
+        }
         if (isBypassed) {
           setIsOpen(true);
           setIsClosed(false);
@@ -37,98 +43,99 @@ function ApplyPageContent() {
   }, [isBypassed]);
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans relative">
-      
-      {/* Background library image with fading mask */}
-      <div className="fixed inset-0 z-0 w-full h-full overflow-hidden pointer-events-none bg-zinc-950">
+    <main className="min-h-screen bg-[#0c0e12] text-[#f1f5f9] flex flex-col font-sans relative selection:bg-[#00b964]/30 selection:text-[#00e575]">
+      {/* Seamless fixed background running continuously from top 0 behind navbar */}
+      <div className="fixed inset-0 z-0 w-full h-full overflow-hidden pointer-events-none bg-[#0c0e12]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src="/college-building.png" 
           alt="Sri Vasavi Engineering College Building Background" 
-          className="w-full h-full object-cover object-center opacity-[0.8]" 
+          className="w-full h-full object-cover object-center opacity-[0.25]" 
         />
-        {/* Dark mask overlay to blend it heavily into the background color */}
-        <div className="absolute inset-0 bg-zinc-950/85 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-zinc-950" />
+        <div className="absolute inset-0 bg-[#0c0e12]/80 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0e12]/60 to-[#0c0e12]" />
       </div>
 
-      {/* Header Accent */}
-      <div className="w-full h-1 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 relative z-10" />
+      {/* Floating Navbar */}
+      <Navbar />
 
-      {/* Nav */}
-      <div className="w-full max-w-5xl mx-auto px-6 pt-8 flex items-center justify-between relative z-10">
-        <Link 
-          href="/clubs/gfg/hiring" 
-          className="flex items-center space-x-1.5 text-zinc-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider font-mono"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back to Recruitment Landing</span>
-        </Link>
+      {/* Main Content Container */}
+      <div className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col justify-center relative z-10">
         
-        <div className="flex items-center space-x-2 text-zinc-500">
-          <div className="w-5 h-5 text-emerald-500 flex items-center justify-center">
-            <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-              <path d="M21.45 14.315c-.143.28-.334.532-.565.745a3.691 3.691 0 0 1-1.104.695 4.51 4.51 0 0 1-3.116-.016 3.79 3.79 0 0 1-2.135-2.078 3.571 3.571 0 0 1-.13-.353h7.418a4.26 4.26 0 0 1-.368 1.008zm-11.99-.654a3.793 3.793 0 0 1-2.134 2.078 4.51 4.51 0 0 1-3.117.016 3.7 3.7 0 0 1-1.104-.695 2.652 2.652 0 0 1-.564-.745 4.221 4.221 0 0 1-.368-1.006H9.59c-.038.12-.08.238-.13.352zm14.501-1.758a3.849 3.849 0 0 0-.082-.475l-9.634-.008a3.932 3.932 0 0 1 1.143-2.348c.363-.35.79-.625 1.26-.809a3.97 3.97 0 0 1 4.484.957l1.521-1.49a5.7 5.7 0 0 0-1.922-1.357 6.283 6.283 0 0 0-2.544-.49 6.35 6.35 0 0 0-2.405.457 6.007 6.007 0 0 0-1.963 1.276 6.142 6.142 0 0 0-1.325 1.94 5.862 5.862 0 0 0-.466 1.864h-.063a5.857 5.857 0 0 0-.467-1.865 6.13 6.13 0 0 0-1.325-1.939A6 6 0 0 0 8.21 6.34a6.698 6.698 0 0 0-4.949.031A5.708 5.708 0 0 0 1.34 7.73l1.52 1.49a4.166 4.166 0 0 1 4.484-.958c.47.184.898.46 1.26.81.368.36.66.792.859 1.268.146.344.242.708.285 1.08l-9.635.008A4.714 4.714 0 0 0 0 12.457a6.493 6.493 0 0 0 .345 2.127 4.927 4.927 0 0 0 1.08 1.783c.528.56 1.17 1 1.88 1.293a6.454 6.454 0 0 0 2.504.457c.824.005 1.64-.15 2.404-.457a5.986 5.986 0 0 0 1.964-1.277 6.116 6.116 0 0 0 1.686-3.076h.273a6.13 6.13 0 0 0 1.686 3.077 5.99 5.99 0 0 0 1.964 1.276 6.345 6.345 0 0 0 2.405.457 6.45 6.45 0 0 0 2.502-.457 5.42 5.42 0 0 0 1.882-1.293 4.928 4.928 0 0 0 1.08-1.783A6.52 6.52 0 0 0 24 12.457a4.757 4.757 0 0 0-.039-.554z"/>
-            </svg>
+        {/* Back Link & Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <Link 
+            href="/clubs/gfg/hiring" 
+            className="inline-flex items-center space-x-1.5 text-[#94a3b8] hover:text-[#00e575] transition-colors text-xs font-bold uppercase tracking-wider font-mono bg-[#141820]/60 border border-[#1e2632] px-3.5 py-2 rounded-xl backdrop-blur-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Back to Recruitment Landing</span>
+          </Link>
+          
+          <div className="hidden sm:flex items-center space-x-2 text-[#94a3b8] text-xs font-mono">
+            <span className="w-2 h-2 rounded-full bg-[#00b964] animate-pulse" />
+            <span>{cycleTitle || 'GFG SVEC Recruitment'}</span>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-widest font-mono">GFG SVEC Club</span>
         </div>
-      </div>
 
-      {/* Main Container */}
-      <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 flex flex-col justify-center relative z-10">
-        
         {loading ? (
-          <div className="flex flex-col items-center justify-center space-y-3 py-20">
-            <span className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Loading Registration System...</span>
+          <div className="bg-[#141820]/80 border border-[#1e2632] rounded-3xl p-12 text-center backdrop-blur-md max-w-md mx-auto my-12 flex flex-col items-center space-y-4">
+            <span className="w-10 h-10 border-3 border-[#00b964] border-t-transparent rounded-full animate-spin" />
+            <span className="text-[#94a3b8] font-mono text-xs uppercase tracking-widest">Loading Registration System...</span>
           </div>
         ) : error ? (
-          <div className="max-w-md mx-auto text-center space-y-4 py-16">
-            <div className="w-12 h-12 bg-red-950/40 border border-red-500/30 text-red-500 rounded-2xl flex items-center justify-center mx-auto">
-              <AlertCircle size={24} />
+          <div className="bg-[#141820]/90 border border-red-500/30 rounded-3xl p-8 sm:p-12 text-center backdrop-blur-md max-w-md mx-auto my-12 space-y-4 shadow-2xl">
+            <div className="w-14 h-14 bg-red-950/50 border border-red-500/30 text-red-400 rounded-2xl flex items-center justify-center mx-auto">
+              <AlertCircle size={28} />
             </div>
-            <h3 className="text-xl font-bold text-white uppercase">Connection Error</h3>
-            <p className="text-zinc-400 text-sm leading-relaxed">{error}</p>
-            <Link href="/clubs/gfg/hiring" className="inline-block py-2.5 px-6 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition-all">
+            <h3 className="text-xl font-extrabold text-white uppercase tracking-tight">Connection Error</h3>
+            <p className="text-[#94a3b8] text-sm leading-relaxed">{error}</p>
+            <Link href="/clubs/gfg/hiring" className="inline-block py-3 px-8 bg-[#1e2632] hover:bg-[#283242] border border-[#2e3b4e] rounded-xl text-xs font-bold uppercase tracking-wider text-white transition-all">
               Try Again
             </Link>
           </div>
         ) : isClosed ? (
-          <div className="max-w-md mx-auto text-center space-y-4 py-16">
-            <div className="w-12 h-12 bg-red-950/40 border border-red-500/30 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <AlertCircle size={24} />
+          <div className="bg-[#141820]/90 border border-[#1e2632] rounded-3xl p-8 sm:p-12 text-center backdrop-blur-md max-w-lg mx-auto my-12 space-y-5 shadow-2xl">
+            <div className="w-16 h-16 bg-red-950/40 border border-red-500/30 text-red-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+              <Lock size={32} />
             </div>
-            <h3 className="text-xl font-bold text-white uppercase">Applications Closed</h3>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              Recruitment registration forms are now closed. The deadline of 12 August 2026, 10:00 PM IST has passed.
-            </p>
-            <Link href="/clubs/gfg/hiring" className="inline-block py-2.5 px-6 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold uppercase tracking-wider text-zinc-300 hover:text-white transition-all">
-              Go to Recruitment Landing
-            </Link>
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight uppercase">APPLICATIONS <span className="text-red-400">CLOSED</span></h2>
+              <p className="text-[#94a3b8] text-sm leading-relaxed mt-2">
+                Registration for this recruitment cycle has officially ended. Thank you for your interest in joining GeeksforGeeks SVEC Student Chapter!
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link href="/clubs/gfg/hiring" className="inline-flex items-center space-x-2 py-3 px-8 bg-[#00b964] hover:bg-[#00d070] text-[#0c0e12] font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#00b964]/20">
+                <span>Go to Recruitment Landing</span>
+              </Link>
+            </div>
           </div>
         ) : !isOpen ? (
-          <div className="max-w-md mx-auto text-center space-y-4 py-16">
-            <div className="w-12 h-12 text-emerald-500 flex items-center justify-center mx-auto mb-4">
-              <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-                <path d="M21.45 14.315c-.143.28-.334.532-.565.745a3.691 3.691 0 0 1-1.104.695 4.51 4.51 0 0 1-3.116-.016 3.79 3.79 0 0 1-2.135-2.078 3.571 3.571 0 0 1-.13-.353h7.418a4.26 4.26 0 0 1-.368 1.008zm-11.99-.654a3.793 3.793 0 0 1-2.134 2.078 4.51 4.51 0 0 1-3.117.016 3.7 3.7 0 0 1-1.104-.695 2.652 2.652 0 0 1-.564-.745 4.221 4.221 0 0 1-.368-1.006H9.59c-.038.12-.08.238-.13.352zm14.501-1.758a3.849 3.849 0 0 0-.082-.475l-9.634-.008a3.932 3.932 0 0 1 1.143-2.348c.363-.35.79-.625 1.26-.809a3.97 3.97 0 0 1 4.484.957l1.521-1.49a5.7 5.7 0 0 0-1.922-1.357 6.283 6.283 0 0 0-2.544-.49 6.35 6.35 0 0 0-2.405.457 6.007 6.007 0 0 0-1.963 1.276 6.142 6.142 0 0 0-1.325 1.94 5.862 5.862 0 0 0-.466 1.864h-.063a5.857 5.857 0 0 0-.467-1.865 6.13 6.13 0 0 0-1.325-1.939A6 6 0 0 0 8.21 6.34a6.698 6.698 0 0 0-4.949.031A5.708 5.708 0 0 0 1.34 7.73l1.52 1.49a4.166 4.166 0 0 1 4.484-.958c.47.184.898.46 1.26.81.368.36.66.792.859 1.268.146.344.242.708.285 1.08l-9.635.008A4.714 4.714 0 0 0 0 12.457a6.493 6.493 0 0 0 .345 2.127 4.927 4.927 0 0 0 1.08 1.783c.528.56 1.17 1 1.88 1.293a6.454 6.454 0 0 0 2.504.457c.824.005 1.64-.15 2.404-.457a5.986 5.986 0 0 0 1.964-1.277 6.116 6.116 0 0 0 1.686-3.076h.273a6.13 6.13 0 0 0 1.686 3.077 5.99 5.99 0 0 0 1.964 1.276 6.345 6.345 0 0 0 2.405.457 6.45 6.45 0 0 0 2.502-.457 5.42 5.42 0 0 0 1.882-1.293 4.928 4.928 0 0 0 1.08-1.783A6.52 6.52 0 0 0 24 12.457a4.757 4.757 0 0 0-.039-.554z"/>
-              </svg>
+          <div className="bg-[#141820]/90 border border-[#1e2632] rounded-3xl p-8 sm:p-12 text-center backdrop-blur-md max-w-lg mx-auto my-12 space-y-5 shadow-2xl">
+            <div className="w-16 h-16 bg-[#00b964]/10 border border-[#00b964]/30 text-[#00b964] rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+              <Clock size={32} />
             </div>
-            <h3 className="text-xl font-bold text-white uppercase">Applications Open Soon</h3>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              Recruitment registration forms are not open yet. Please wait for the countdown timer to finish.
-            </p>
-            <Link href="/clubs/gfg/hiring" className="inline-block py-2.5 px-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
-              Go to Timer
-            </Link>
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight uppercase">APPLICATIONS <span className="text-[#00b964]">OPEN SOON</span></h2>
+              <p className="text-[#94a3b8] text-sm leading-relaxed mt-2">
+                Registration forms are not open yet. Please wait for the countdown timer to finish on the recruitment landing page.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Link href="/clubs/gfg/hiring" className="inline-flex items-center space-x-2 py-3 px-8 bg-[#00b964] hover:bg-[#00d070] text-[#0c0e12] font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#00b964]/20">
+                <span>View Opening Countdown</span>
+              </Link>
+            </div>
           </div>
         ) : (
-          <div className="py-4">
+          <div className="py-2">
             <ApplicationForm />
           </div>
         )}
-
       </div>
+
+      <FaqWidget />
     </main>
   );
 }
@@ -136,8 +143,9 @@ function ApplyPageContent() {
 export default function ApplyPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center space-y-3 font-sans">
-        <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest animate-pulse">Loading Application Page...</span>
+      <main className="min-h-screen bg-[#0c0e12] flex flex-col items-center justify-center space-y-3 font-sans">
+        <span className="w-8 h-8 border-3 border-[#00b964] border-t-transparent rounded-full animate-spin" />
+        <span className="text-[#94a3b8] font-mono text-xs uppercase tracking-widest">Loading Application Page...</span>
       </main>
     }>
       <ApplyPageContent />
