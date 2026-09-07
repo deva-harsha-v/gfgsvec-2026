@@ -119,10 +119,10 @@ export default function GfgHomePage() {
           <img 
             src="/college-building.png" 
             alt="Sri Vasavi Engineering College Campus" 
-            className="w-full h-full object-cover object-center opacity-20 mix-blend-luminosity scale-105" 
+            className="w-full h-full object-cover object-center opacity-45 brightness-90 scale-105" 
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0c0e12]/70 via-[#0c0e12]/90 to-[#0c0e12]" />
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#00b964]/10 blur-[130px] rounded-full pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0c0e12]/45 via-[#0c0e12]/70 to-[#0c0e12]" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#00b964]/15 blur-[130px] rounded-full pointer-events-none" />
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-10 text-center space-y-7 md:space-y-8 my-auto">
